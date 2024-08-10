@@ -28,6 +28,7 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
+doctype_js = {'Purchase Order' : 'custom_folder/purchase_order/purchase_order.js'}
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -121,6 +122,12 @@ app_license = "mit"
 # Document Events
 # ---------------
 # Hook on document methods and events
+
+doc_events = {
+    "Purchase Order": {
+        "validate": "torzel_custom.torzel_custom.custom_folder.purchase_order.purchase_order.custom_validate_gate_pass"
+    }
+}
 
 # doc_events = {
 # 	"*": {
@@ -227,3 +234,4 @@ app_license = "mit"
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
+fixtures = ["Custom Field"]

@@ -2,7 +2,6 @@
 // For license information, please see license.txt
 
 
-
 frappe.ui.form.on('Sauda Item', {
     quantity: function (frm) {
         calculateTotalQty(frm);
@@ -10,13 +9,13 @@ frappe.ui.form.on('Sauda Item', {
 });
 
 function calculateTotalQty(frm) {
-    let totalQuanity = 0;
+    let totalQuantity = 0;
 
+    // Sum the quantity from each item in the sauda_item_table
     (frm.doc.sauda_item_table || []).forEach((item) => {
-        totalQuanity += item.quantity || 0;
+        totalQuantity += item.quantity || 0;
     });
 
-    frm.set_value('total_quantity', totalQuanity);
+    // Set the calculated total quantity in the total_quantity field
+    frm.set_value('total_quantity', totalQuantity);
 }
-
-

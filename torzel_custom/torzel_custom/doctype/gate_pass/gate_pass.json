@@ -150,8 +150,13 @@
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "links": [],
- "modified": "2024-08-08 16:21:15.423818",
+ "links": [
+  {
+   "link_doctype": "Purchase Order",
+   "link_fieldname": "custom_gate_pass"
+  }
+ ],
+ "modified": "2024-08-09 20:11:40.202528",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Gate Pass",

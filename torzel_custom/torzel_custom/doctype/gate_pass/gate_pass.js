@@ -34,14 +34,13 @@ function differenceQty(frm) {
     let gross_weight = frm.doc.gross_weight;
 
     if (gross_weight && total_gw_qty) {
-        let diff_qty = 0;
-        diff_qty = gross_weight - total_gw_qty;
+        let diff_qty = gross_weight - total_gw_qty;
         frm.set_value('difference_gw', diff_qty);
-        frm.refresh_field('difference_gw');
     } else {
         frm.set_value('difference_gw', '');
-        frm.refresh_field('difference_gw');
     }
+
+    frm.refresh_field('difference_gw');
 }
 
 function differenceBags(frm) {
@@ -49,14 +48,13 @@ function differenceBags(frm) {
     let total_bags = frm.doc.total_bags;
 
     if (bag_no && total_bags) {
-        let diff_bags = 0;
-        diff_bags = bag_no - total_bags;
+        let diff_bags = bag_no - total_bags;
         frm.set_value('difference_bags', diff_bags);
-        frm.refresh_field('difference_bags');
     } else {
         frm.set_value('difference_bags', '');
-        frm.refresh_field('difference_bags');
     }
+
+    frm.refresh_field('difference_bags');
 }
 
 function updateTareWeight(frm) {
@@ -64,14 +62,13 @@ function updateTareWeight(frm) {
     let net_weight = frm.doc.net_weight;
 
     if (gross_weight && net_weight) {
-        let tare_weight = 0;
-        tare_weight = gross_weight - net_weight;
+        let tare_weight = gross_weight - net_weight;
         frm.set_value('tare_weight', tare_weight);
-        frm.refresh_field('tare_weight');
     } else {
         frm.set_value('tare_weight', '');
-        frm.refresh_field('tare_weight');
     }
+
+    frm.refresh_field('tare_weight');
 }
 
 frappe.ui.form.on('Gate Pass Item', {
