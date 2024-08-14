@@ -92,8 +92,6 @@ class GatePass(Document):
             # Add the current Gate Pass quantity
             total_gate_pass_qty += self.total_gw_qty
             
-            total_gate_pass_qty_with_deviation = total_gate_pass_qty
-
             # Validation: Ensure total gate pass quantities do not exceed Sauda's total quantity + deviation
             if (total_gate_pass_qty or 0) > (sauda_quantity_with_deviation or 0):
                 frappe.throw(

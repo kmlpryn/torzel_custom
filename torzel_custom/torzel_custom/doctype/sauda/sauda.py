@@ -6,7 +6,9 @@ from frappe.model.document import Document
 
 class Sauda(Document):
     def validate(self):
+        self.calculate_amount_in_sauda_item_table()
         self.calculate_total_quantity()
+        self.calculate_total_amount()
 
     def calculate_total_quantity(self):
         """
@@ -18,3 +20,18 @@ class Sauda(Document):
             total_quantity += item.quantity or 0
 
         self.total_quantity = total_quantity
+        
+    def calculate_total_amount(self):
+        """
+        Calculate the total amount from the Sauda Item child table and set it in the total_amount field.
+        """
+        total_amount = 0
+
+        for item in self.get("sauda_item_table"):
+            total_amount += item.amount or 0
+
+        self.total_amount = total_amount
+    
+    def calculate_amount_in_sauda_item_table(self):
+        for item in self.get("sauda_item_table"):
+            item.amount = (item.quantity or 0) * (item.rate or 0)
