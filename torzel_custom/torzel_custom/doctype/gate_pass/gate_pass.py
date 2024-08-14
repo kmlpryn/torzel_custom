@@ -45,7 +45,7 @@ class GatePass(Document):
         """
         Validate that the gross weight is not less than the net weight.
         """
-        if self.gross_weight < self.net_weight:
+        if (self.gross_weight or 0) < (self.net_weight or 0):
             frappe.throw(_("Gross Weight cannot be less than Net Weight"))
 
     def before_save(self):
@@ -74,10 +74,14 @@ class GatePass(Document):
         
     def validate_sauda_quantity(self):
         """
-        Validate that the total Gate Pass quantities linked to a Sauda do not exceed the Sauda's total quantity.
+        Validate that the total Gate Pass quantities linked to a Sauda do not exceed the Sauda's total quantity + deviation.
         """
+        deviation = 0.05
+        
         if self.sauda:
             sauda = frappe.get_doc('Sauda', self.sauda)
+            
+            sauda_quantity_with_deviation = sauda.total_quantity + (sauda.total_quantity * deviation)
             
             # Sum quantities of all other Gate Passes linked to the same Sauda, excluding the current one
             total_gate_pass_qty = frappe.db.sql("""
@@ -87,12 +91,14 @@ class GatePass(Document):
             
             # Add the current Gate Pass quantity
             total_gate_pass_qty += self.total_gw_qty
+            
+            total_gate_pass_qty_with_deviation = total_gate_pass_qty
 
-            # Validation: Ensure total gate pass quantities do not exceed Sauda's total quantity
-            if total_gate_pass_qty > sauda.total_quantity:
+            # Validation: Ensure total gate pass quantities do not exceed Sauda's total quantity + deviation
+            if (total_gate_pass_qty or 0) > (sauda_quantity_with_deviation or 0):
                 frappe.throw(
                     _("The total quantity for Gate Passes ({0} kg) exceeds the total Sauda quantity ({1} kg).")
-                    .format(total_gate_pass_qty, sauda.total_quantity)
+                    .format(total_gate_pass_qty, sauda_quantity_with_deviation)
                 )
 
 

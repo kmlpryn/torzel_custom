@@ -28,7 +28,7 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {'Purchase Order' : 'custom_folder/purchase_order/purchase_order.js'}
+doctype_js = {'Purchase Order' : '/custom_folder/purchase_order/purchase_order.js'}
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -125,7 +125,7 @@ doctype_js = {'Purchase Order' : 'custom_folder/purchase_order/purchase_order.js
 
 doc_events = {
     "Purchase Order": {
-        "validate": "torzel_custom.torzel_custom.custom_folder.purchase_order.purchase_order.custom_validate_gate_pass"
+        "validate": "torzel_custom.custom_folder.purchase_order.purchase_order.custom_validate_gate_pass"
     }
 }
 

@@ -2,6 +2,17 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Gate Pass", {
+    refresh: function (frm) {
+        // Setting custom query for sauda field 
+        frm.set_query("sauda", function () {
+            return {
+                "filters": [
+                    ["Sauda", "docstatus", "=", 1],
+                    ["Sauda", "supplier", "=", frm.doc.supplier],
+                ]
+            };
+        });
+    },
     gross_weight: function (frm) {
         updateTareWeight(frm);
         differenceQty(frm);
@@ -85,7 +96,6 @@ frappe.ui.form.on('Gate Pass Item', {
 });
 
 function calculateQty(frm) {
-    console.log(frm)
     let totalBags = 0;
 
     (frm.doc.gate_pass_item_table || []).forEach((item) => {

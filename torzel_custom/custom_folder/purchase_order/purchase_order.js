@@ -3,30 +3,21 @@ let linkedGatePassesCache = null;
 
 frappe.ui.form.on('Purchase Order', {
     refresh: function (frm) {
-        // Setting custom query for custom_gate_pass field with caching logic
         frm.set_query("custom_gate_pass", function () {
-            // If cache is present, use it directly
-            if (linkedGatePassesCache) {
-                return {
-                    "filters": [
-                        ["Gate Pass", "docstatus", "=", 1],
-                        ["Gate Pass", "supplier", "=", frm.doc.supplier],
-                        ['name', 'not in', linkedGatePassesCache]
-                    ]
-                };
+
+            if (!frm.doc.supplier) {
+                frappe.msgprint(__('Please select a supplier first.'));
+                return false;
             }
-            // If no cache, fetch from server and then set the query
-            return getLinkedGatePasses(frm.doc.supplier).then(linkedGatePasses => {
-                // Populate cache
-                linkedGatePassesCache = linkedGatePasses;
-                return {
-                    "filters": [
-                        ["Gate Pass", "docstatus", "=", 1],
-                        ["Gate Pass", "supplier", "=", frm.doc.supplier],
-                        ['name', 'not in', linkedGatePasses]
-                    ]
-                };
-            });
+
+            // Directly fetch and apply filters without caching for simplicity
+            return {
+                filters: [
+                    ["Gate Pass", "docstatus", "=", 1],
+                    ["Gate Pass", "supplier", "=", frm.doc.supplier],
+                    ['name', 'not in', getLinkedGatePassesSync(frm.doc.supplier)]
+                ]
+            };
         });
     },
     custom_gate_pass: function (frm) {
@@ -55,7 +46,6 @@ frappe.ui.form.on('Purchase Order', {
     },
     supplier_name: function (frm) {
         // Invalidate cache when supplier changes
-        linkedGatePassesCache = null;
         frm.set_value("custom_gate_pass", "");
         frm.set_value("custom_total_gross_weight_quantity", null);
     },
@@ -75,33 +65,32 @@ frappe.ui.form.on('Purchase Order', {
 })
 
 // Function for excluding already attached Gate Passes 
-// using async to not block UI
 // Function to fetch already linked Gate Passes for a supplier
-function getLinkedGatePasses(supplier) {
-    return new Promise((resolve, reject) => {
-        frappe.call({
-            method: "frappe.client.get_list",
-            args: {
-                doctype: "Purchase Order",
-                filters: {
-                    supplier: supplier,
-                    docstatus: ["!=", 2]  // Exclude cancelled Purchase Orders
-                },
-                fields: ["custom_gate_pass"]
+// Synchronous function to fetch linked Gate Passes
+function getLinkedGatePassesSync(supplier) {
+    let linkedGatePasses = [];
+    frappe.call({
+        method: "frappe.client.get_list",
+        args: {
+            doctype: "Purchase Order",
+            filters: {
+                supplier: supplier,
+                docstatus: ["!=", 2]  // Exclude cancelled Purchase Orders
             },
-            callback: function (data) {
-                if (data.message) {
-                    let linkedGatePasses = data.message.map(po => po.custom_gate_pass);
-                    resolve(linkedGatePasses);
-                } else {
-                    resolve([]);
-                }
-            },
-            error: function (err) {
-                frappe.msgprint(__('Failed to fetch linked Gate Passes'));
-                reject(err);
+            fields: ["custom_gate_pass"]
+        },
+        async: false, // Synchronous call to ensure filter is applied immediately
+        callback: function (result) {
+            if (result.message) {
+                linkedGatePasses = result.message.map(po => po.custom_gate_pass).filter(po => !!po);
+            } else {
+                console.log("No linked Gate Passes found");
             }
-        });
+        },
+        error: function (error) {
+            frappe.msgprint(__('Failed to fetch linked Gate Passes'));
+            console.error("Error fetching linked Gate Passes: ", error);
+        }
     });
+    return linkedGatePasses;
 }
-
