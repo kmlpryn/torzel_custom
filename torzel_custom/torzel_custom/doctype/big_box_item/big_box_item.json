@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-08-17 10:59:34.278438",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "barcode_number",
+  "product",
+  "net_weight"
+ ],
+ "fields": [
+  {
+   "fieldname": "barcode_number",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Barcode Number",
+   "options": "Barcode Generator"
+  },
+  {
+   "fieldname": "product",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Product"
+  },
+  {
+   "fieldname": "net_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Net Weight",
+   "precision": "3"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-08-17 11:19:53.438047",
+ "modified_by": "Administrator",
+ "module": "Torzel Custom",
+ "name": "Big Box Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

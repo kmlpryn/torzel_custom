@@ -1,0 +1,181 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-08-17 11:09:56.138456",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_dosv",
+  "amended_from",
+  "transaction_date",
+  "brand",
+  "auto_stock_entry_number",
+  "column_break_sxtp",
+  "barcode",
+  "warehouse_section",
+  "source_warehouse",
+  "column_break_nrht",
+  "target_warehouse",
+  "material_section",
+  "raw_material",
+  "net_weight",
+  "column_break_epjd",
+  "finished_product",
+  "tare_weight",
+  "column_break_bcfp",
+  "length",
+  "gross_weight"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_dosv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Barcode Generator",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "transaction_date",
+   "fieldtype": "Date",
+   "label": "Transaction Date"
+  },
+  {
+   "fieldname": "brand",
+   "fieldtype": "Link",
+   "label": "Brand",
+   "options": "Brand"
+  },
+  {
+   "fieldname": "auto_stock_entry_number",
+   "fieldtype": "Link",
+   "label": "Auto Stock Entry number",
+   "options": "Stock Entry"
+  },
+  {
+   "fieldname": "column_break_sxtp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "barcode",
+   "fieldtype": "Barcode",
+   "label": "Barcode"
+  },
+  {
+   "fieldname": "warehouse_section",
+   "fieldtype": "Section Break",
+   "label": "Warehouse"
+  },
+  {
+   "fieldname": "source_warehouse",
+   "fieldtype": "Link",
+   "label": "Source Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "column_break_nrht",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "target_warehouse",
+   "fieldtype": "Link",
+   "label": "Target Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "material_section",
+   "fieldtype": "Section Break",
+   "label": "Material"
+  },
+  {
+   "fieldname": "raw_material",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Raw Material",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "net_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Net Weight",
+   "non_negative": 1,
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_epjd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "finished_product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Finished Product",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tare_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Tare Weight",
+   "non_negative": 1,
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_bcfp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "length",
+   "fieldtype": "Float",
+   "label": "Length",
+   "non_negative": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gross_weight",
+   "fieldtype": "Float",
+   "label": "Gross Weight",
+   "non_negative": 1,
+   "precision": "2",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-08-17 11:19:11.115358",
+ "modified_by": "Administrator",
+ "module": "Torzel Custom",
+ "name": "Barcode Generator",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
