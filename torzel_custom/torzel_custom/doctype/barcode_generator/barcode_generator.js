@@ -7,18 +7,18 @@ frappe.ui.form.on("Barcode Generator", {
 
         let lastPort = null; // Store the last connected port
 
+
         if ("serial" in navigator) {
             // The Web Serial API is supported.
             (async () => {
                 try {
-                    // Get all serial ports the user has previously granted the website access to.
-
                     let port = null;
 
                     if (lastPort && !lastPort.readable.locked) {
                         port = lastPort;
                         frappe.msgprint(__('Reusing the last connected weight machine.'));
-                    } else {
+                    }
+                    else {
                         frm.add_custom_button(__('Connect To A Weight Machine'), async function () {
                             try {
                                 // Prompt user to select any serial port.
@@ -26,6 +26,7 @@ frappe.ui.form.on("Barcode Generator", {
                                 // Wait for the serial port to open.
                                 await port.open({ baudRate: 9600 });
                                 lastPort = port; // Save the connected port
+                                frm.clear_custom_buttons('Connect To A Weight Machine');
                             } catch (err) {
                                 console.error('Failed to connect to the weight machine:', err);
                                 frappe.msgprint(__('Failed to connect to the weight machine.'));
@@ -51,22 +52,30 @@ frappe.ui.form.on("Barcode Generator", {
                             const reader = textDecoder.readable.getReader();
 
                             // Listen to data coming from the serial device.
-                            const { value, done } = await reader.read();
-                            if (done) {
-                                // Allow the serial port to be closed later.
-                                reader.releaseLock();
-                            } else {
+                            while (true) {
+                                const { value, done } = await reader.read();
+                                if (done) {
+                                    reader.releaseLock();
+                                    break;
+                                }
                                 // value is a string.
                                 console.log(value);
-                                // Set the captured weight in the weight field
-                                frm.set_value('gross_weight', value.trim());
-                                frappe.msgprint(__('Weight captured: ') + value.trim() + ' kg');
-                                reader.releaseLock();
+                                const valueArr = (value || "").split(" ");
+                                if (valueArr.length > 0) {
+                                    valueArr.forEach((value) => {
+                                        if (!isNaN(+value)) {
+                                            frm.set_value('gross_weight', value.trim());
+                                            frappe.msgprint(__('Weight captured: ') + value.trim() + ' kg');
+                                            reader.cancel();
+                                        }
+                                    })
+                                }
                             }
-                            // Ensure streams are closed properly
-                            await readableStreamClosed.catch(err => {
+
+                            await readableStreamClosed.catch((err) => {
                                 console.error('Stream close failed:', err);
                             });
+
                         } catch (err) {
                             console.error('Error reading from the serial device:', err);
                             frappe.msgprint(__('Failed to capture weight from the machine.'));
