@@ -14,9 +14,9 @@ frappe.ui.form.on("Barcode Generator", {
                 console.log({ ports })
                 let port = null;
 
-                if (ports.length) {
+                if (ports.length === 1) {
                     port = ports[0];
-
+                    await port.open({ baudRate: 9600 });
                 } else {
                     frm.add_custom_button(__('Connect To Weight Machine'), async function () {
                         // Prompt user to select any serial port.
@@ -27,6 +27,8 @@ frappe.ui.form.on("Barcode Generator", {
                 }
 
                 frm.add_custom_button(__('Capture Weight'), async function () {
+                    console.log("Is locked after open?", port.readable.locked);
+                    // Prints "Is locked after open? false"
                     const textDecoder = new TextDecoderStream();
                     const reader = textDecoder.readable.getReader();
                     // Listen to data coming from the serial device.
@@ -46,6 +48,12 @@ frappe.ui.form.on("Barcode Generator", {
                 });
 
                 frm.add_custom_button(__('Connect to another machine'), async function () {
+                    console.log("Is locked after releaseLock?", port.readable.locked);
+                    // Prints "Is locked after releaseLock? true"
+                    if (port) {
+                        await port.close();
+                        console.log("Port closed");
+                    }
                     port = await navigator.serial.requestPort();
                 });
             })()
