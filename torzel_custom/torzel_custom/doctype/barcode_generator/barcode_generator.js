@@ -12,21 +12,14 @@ frappe.ui.form.on("Barcode Generator", {
             (async () => {
                 try {
                     // Get all serial ports the user has previously granted the website access to.
-                    const ports = await navigator.serial.getPorts();
-                    console.log({ ports });
 
                     let port = null;
 
-                    if (ports.length === 1) {
-                        port = ports[0];
-                        await port.open({ baudRate: 9600 });
-                        lastPort = port;
-                        frappe.msgprint(__('Connected to the last used weight machine.'));
-                    } else if (lastPort && !lastPort.readable.locked) {
+                    if (lastPort && !lastPort.readable.locked) {
                         port = lastPort;
                         frappe.msgprint(__('Reusing the last connected weight machine.'));
                     } else {
-                        frm.add_custom_button(__('Connect To Weight Machine'), async function () {
+                        frm.add_custom_button(__('Connect To A Weight Machine'), async function () {
                             try {
                                 // Prompt user to select any serial port.
                                 port = await navigator.serial.requestPort();
@@ -68,6 +61,7 @@ frappe.ui.form.on("Barcode Generator", {
                                 // Set the captured weight in the weight field
                                 frm.set_value('gross_weight', value.trim());
                                 frappe.msgprint(__('Weight captured: ') + value.trim() + ' kg');
+                                reader.releaseLock();
                             }
                             // Ensure streams are closed properly
                             await readableStreamClosed.catch(err => {
