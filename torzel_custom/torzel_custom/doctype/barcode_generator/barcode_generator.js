@@ -47,11 +47,16 @@ frappe.ui.form.on("Barcode Generator", {
                             return;
                         }
 
-                        console.log("Is locked after open?", port.readable.locked);
-                        const textDecoder = new TextDecoderStream();
-                        const reader = port.readable.pipeThrough(textDecoder).getReader();
+                        if (port.readable.locked) {
+                            frappe.msgprint(__('The port is currently locked. Please try again.'));
+                            return;
+                        }
 
                         try {
+                            const textDecoder = new TextDecoderStream();
+                            const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+                            const reader = textDecoder.readable.getReader();
+
                             // Listen to data coming from the serial device.
                             const { value, done } = await reader.read();
                             if (done) {
@@ -64,6 +69,10 @@ frappe.ui.form.on("Barcode Generator", {
                                 frm.set_value('gross_weight', value.trim());
                                 frappe.msgprint(__('Weight captured: ') + value.trim() + ' kg');
                             }
+                            // Ensure streams are closed properly
+                            await readableStreamClosed.catch(err => {
+                                console.error('Stream close failed:', err);
+                            });
                         } catch (err) {
                             console.error('Error reading from the serial device:', err);
                             frappe.msgprint(__('Failed to capture weight from the machine.'));
@@ -105,3 +114,4 @@ frappe.ui.form.on("Barcode Generator", {
         }
     }
 });
+
