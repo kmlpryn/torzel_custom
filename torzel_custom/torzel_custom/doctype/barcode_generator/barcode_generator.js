@@ -26,7 +26,6 @@ frappe.ui.form.on("Barcode Generator", {
                                 // Wait for the serial port to open.
                                 await port.open({ baudRate: 9600 });
                                 lastPort = port; // Save the connected port
-                                frm.clear_custom_buttons('Connect To A Weight Machine');
                             } catch (err) {
                                 console.error('Failed to connect to the weight machine:', err);
                                 frappe.msgprint(__('Failed to connect to the weight machine.'));
