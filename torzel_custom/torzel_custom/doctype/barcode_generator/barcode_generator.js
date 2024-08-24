@@ -1,7 +1,5 @@
 // Copyright (c) 2024, V12 Infotech and contributors
 // For license information, please see license.txt
-
-
 frappe.ui.form.on("Barcode Generator", {
     refresh(frm) {
 
@@ -13,21 +11,22 @@ frappe.ui.form.on("Barcode Generator", {
             (async () => {
                 // Get all serial ports the user has previously granted the website access to.
                 const ports = await navigator.serial.getPorts();
+                console.log({ ports })
                 let port = null;
 
                 if (ports.length) {
                     port = ports[0];
+
                 } else {
                     frm.add_custom_button(__('Connect To Weight Machine'), async function () {
                         // Prompt user to select any serial port.
                         port = await navigator.serial.requestPort();
+                        // Wait for the serial port to open.
+                        await port.open({ baudRate: 9600 });
                     });
                 }
 
                 frm.add_custom_button(__('Capture Weight'), async function () {
-                    // Wait for the serial port to open.
-                    await port.open({ baudRate: 9600 });
-
                     const textDecoder = new TextDecoderStream();
                     const reader = textDecoder.readable.getReader();
                     // Listen to data coming from the serial device.
