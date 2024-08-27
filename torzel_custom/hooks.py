@@ -28,7 +28,11 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {'Purchase Order' : '/custom_folder/purchase_order/purchase_order.js'}
+doctype_js = {
+    'Purchase Order' : '/custom_folder/purchase_order/purchase_order.js',
+    'Delivery Note' : '/custom_folder/delivery_note/delivery_note.js' 
+}
+
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

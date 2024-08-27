@@ -4,6 +4,11 @@ import frappe
 from frappe.model.document import Document
 
 class BarcodeGenerator(Document):
+    def before_submit(self):
+        # Set the barcode field to the document name if it is not already set
+        if not self.barcode:
+            self.barcode = self.name
+
     def on_submit(self):
         # Create a Stock Entry when Barcode Generator is submitted
         stock_entry = frappe.get_doc({
