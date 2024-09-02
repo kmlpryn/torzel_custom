@@ -192,10 +192,6 @@ const startPreviewingWeight = async (port, frm) => {
 };
 
 frappe.ui.form.on('Gate Pass Item', {
-    gross_qty: function (frm, cdt, cdn) {  // Replace `qty` with a field of interest
-        currentRow = locals[cdt][cdn];
-        frappe.msgprint(__('Row selected with ID: ') + currentRow.name);
-    },
     bags_no: function (frm) {
         calculateQty(frm);
     },
@@ -203,8 +199,10 @@ frappe.ui.form.on('Gate Pass Item', {
         calculateQty(frm);
         calculateGrossQty(frm);
     },
-    gross_qty: function (frm) {
+    gross_qty: function (frm, cdt, cdn) {
         calculateGrossQty(frm);
+        currentRow = locals[cdt][cdn];
+        frappe.msgprint(__('Row selected with ID: ') + currentRow.name);
     }
 });
 
