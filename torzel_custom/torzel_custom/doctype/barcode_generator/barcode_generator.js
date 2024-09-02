@@ -13,56 +13,61 @@ frappe.ui.form.on("Barcode Generator", {
 });
 
 const setupSerialPort = (frm) => {
-    let port = null;
+    let lastPort = null;
 
-    // Add the button to connect/disconnect from the weight machine
-    const connectButton = frm.add_custom_button(__('Connect To A Weight Machine'), async function () {
-        try {
-            if (port) {
-                // If already connected, disconnect the port
-                await port.close();
+    // Connect/Disconnect Button
+    let connectButton = frm.add_custom_button(__('Connect to Weight Machine'), async function () {
+        if (lastPort && lastPort.readable) {
+            // Disconnect
+            try {
+                await lastPort.close();
+                lastPort = null;
+                connectButton.html(__('Connect to Weight Machine'));
                 frappe.msgprint(__('Disconnected from the weight machine.'));
-                frm.set_df_property('connect_button', 'label', 'Connect To A Weight Machine');
-                port = null;
-            } else {
-                // Prompt user to select a serial port
-                port = await navigator.serial.requestPort();
-                await port.open({ baudRate: 9600 });
-                frappe.msgprint(__('Connected to the weight machine.'));
-                frm.set_df_property('connect_button', 'label', 'Disconnect From Weight Machine');
-                previewWeightFromPort(port, frm);
+                frm.set_value('gross_weight', '');
+            } catch (err) {
+                console.error('Failed to disconnect from the weight machine:', err);
+                frappe.msgprint(__('Failed to disconnect from the weight machine.'));
             }
-        } catch (err) {
-            console.error('Failed to connect to the weight machine:', err);
-            frappe.msgprint(__('Failed to connect to the weight machine.'));
+        } else {
+            // Connect
+            try {
+                const port = await navigator.serial.requestPort();
+                await connectToPort(port, frm);
+                lastPort = port;
+                connectButton.html(__('Disconnect from Weight Machine'));
+                startPreviewingWeight(port, frm);
+            } catch (err) {
+                console.error('Failed to connect to the weight machine:', err);
+                frappe.msgprint(__('Failed to connect to the weight machine.'));
+            }
         }
     });
 
-    connectButton[0].df.fieldname = 'connect_button';
-
-    // Add the button to capture the current weight
+    // Capture Weight Button
     frm.add_custom_button(__('Capture Weight'), function () {
-        try {
-            const grossWeight = frm.doc.gross_weight;
-            if (grossWeight) {
-                frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
-            } else {
-                frappe.msgprint(__('No weight preview available to capture.'));
-            }
-        } catch (err) {
-            console.error('Error capturing weight:', err);
-            frappe.msgprint(__('Failed to capture weight from the preview.'));
+        const grossWeight = frm.doc.gross_weight;
+        if (grossWeight) {
+            frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
+        } else {
+            frappe.msgprint(__('No weight available to capture.'));
         }
     });
 };
 
-const previewWeightFromPort = async (port, frm) => {
+const connectToPort = async (port, frm) => {
+    await port.open({ baudRate: 9600 });
+    frappe.msgprint(__('Connected to the weight machine.'));
+    console.log('Port opened:', port);
+};
+
+const startPreviewingWeight = async (port, frm) => {
     const textDecoder = new TextDecoderStream();
     const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
     const reader = textDecoder.readable.getReader();
 
     try {
-        // Continuously listen to data coming from the serial device and update the gross_weight field
+        // Continuously read data from the serial device and update the gross_weight field
         while (true) {
             const { value, done } = await reader.read();
             if (done) {
