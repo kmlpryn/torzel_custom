@@ -12,6 +12,16 @@ frappe.ui.form.on("Gate Pass", {
                 ]
             };
         });
+
+        if ("serial" in navigator) {
+            setupSerialPort(frm);
+        } else {
+            frappe.msgprint({
+                message: __("Please use Google Chrome browser"),
+                title: __("Web Serial API is not supported."),
+                indicator: "red",
+            });
+        }
     },
     gross_weight: function (frm) {
         updateTareWeight(frm);
@@ -82,63 +92,18 @@ function updateTareWeight(frm) {
     frm.refresh_field('tare_weight');
 }
 
-frappe.ui.form.on('Gate Pass Item', {
-    refresh: function (frm) {
-        if ("serial" in navigator) {
-            setupSerialPort(frm);
-        } else {
-            frappe.msgprint({
-                message: __("Please use Google Chrome browser"),
-                title: __("Web Serial API is not supported."),
-                indicator: "red",
-            });
-        }
-    },
-    bags_no: function (frm) {
-        calculateQty(frm);
-    },
-    gate_pass_item_table_remove: function (frm) {
-        calculateQty(frm);
-        calculateGrossQty(frm);
-    },
-    gross_qty: function (frm) {
-        calculateGrossQty(frm);
-    }
-});
-
-function calculateQty(frm) {
-    let totalBags = 0;
-
-    (frm.doc.gate_pass_item_table || []).forEach((item) => {
-        totalBags += item.bags_no || 0;
-    });
-
-    frm.set_value('total_bags', totalBags);
-}
-
-function calculateGrossQty(frm) {
-    let totalGrossQty = 0;
-
-    (frm.doc.gate_pass_item_table || []).forEach((item) => {
-        totalGrossQty += item.gross_qty || 0;
-    });
-
-    frm.set_value('total_gw_qty', totalGrossQty);
-}
+let lastPort = null;
+let currentRow = null;
 
 const setupSerialPort = (frm) => {
-    let lastPort = null;
-
     // Connect/Disconnect Button
     let connectButton = frm.add_custom_button(__('Connect to Weight Machine'), async function () {
         if (lastPort && lastPort.readable) {
             // Disconnect
             try {
-                await lastPort.close();
-                lastPort = null;
+                await disconnectPort();
                 connectButton.html(__('Connect to Weight Machine'));
                 frappe.msgprint(__('Disconnected from the weight machine.'));
-                frm.set_value('gross_weight', '');
             } catch (err) {
                 console.error('Failed to disconnect from the weight machine:', err);
                 frappe.msgprint(__('Failed to disconnect from the weight machine.'));
@@ -150,7 +115,6 @@ const setupSerialPort = (frm) => {
                 await connectToPort(port, frm);
                 lastPort = port;
                 connectButton.html(__('Disconnect from Weight Machine'));
-                startPreviewingWeight(port, frm);
             } catch (err) {
                 console.error('Failed to connect to the weight machine:', err);
                 frappe.msgprint(__('Failed to connect to the weight machine.'));
@@ -160,11 +124,16 @@ const setupSerialPort = (frm) => {
 
     // Capture Weight Button
     frm.add_custom_button(__('Capture Weight'), function () {
-        const grossWeight = frm.doc.gross_qty;
-        if (grossWeight) {
-            frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
+        if (currentRow) {
+            const grossWeight = frm.doc.gross_weight;
+            if (grossWeight) {
+                frappe.model.set_value(currentRow.doctype, currentRow.name, 'gross_weight', grossWeight);
+                frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
+            } else {
+                frappe.msgprint(__('No weight available to capture.'));
+            }
         } else {
-            frappe.msgprint(__('No weight available to capture.'));
+            frappe.msgprint(__('Please select a row in the Gate Pass Items table.'));
         }
     });
 };
@@ -173,6 +142,15 @@ const connectToPort = async (port, frm) => {
     await port.open({ baudRate: 9600 });
     frappe.msgprint(__('Connected to the weight machine.'));
     console.log('Port opened:', port);
+    startPreviewingWeight(port, frm);
+};
+
+const disconnectPort = async () => {
+    if (lastPort) {
+        await lastPort.close();
+        lastPort = null;
+        console.log("Port closed");
+    }
 };
 
 const startPreviewingWeight = async (port, frm) => {
@@ -208,5 +186,54 @@ const startPreviewingWeight = async (port, frm) => {
         });
     }
 };
+
+frappe.ui.form.on('Gate Pass Item', {
+    refresh: function (frm) {
+        if ("serial" in navigator) {
+            setupSerialPort(frm);
+        } else {
+            frappe.msgprint({
+                message: __("Please use Google Chrome browser"),
+                title: __("Web Serial API is not supported."),
+                indicator: "red",
+            });
+        }
+    },
+    gate_pass_item_table_rowclick: function (frm, cdt, cdn) {
+        currentRow = locals[cdt][cdn];
+    },
+    bags_no: function (frm) {
+        calculateQty(frm);
+    },
+    gate_pass_item_table_remove: function (frm) {
+        calculateQty(frm);
+        calculateGrossQty(frm);
+    },
+    gross_qty: function (frm) {
+        calculateGrossQty(frm);
+    }
+});
+
+function calculateQty(frm) {
+    let totalBags = 0;
+
+    (frm.doc.gate_pass_item_table || []).forEach((item) => {
+        totalBags += item.bags_no || 0;
+    });
+
+    frm.set_value('total_bags', totalBags);
+}
+
+function calculateGrossQty(frm) {
+    let totalGrossQty = 0;
+
+    (frm.doc.gate_pass_item_table || []).forEach((item) => {
+        totalGrossQty += item.gross_qty || 0;
+    });
+
+    frm.set_value('total_gw_qty', totalGrossQty);
+}
+
+
 
 
