@@ -67,7 +67,8 @@
    "fieldtype": "Link",
    "label": "Sauda",
    "options": "Sauda",
-   "reqd": 1
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "fieldname": "parchi_details_section",
@@ -156,7 +157,7 @@
    "link_fieldname": "custom_gate_pass"
   }
  ],
- "modified": "2024-08-09 20:11:40.202528",
+ "modified": "2024-09-01 23:38:13.900477",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Gate Pass",
@@ -179,7 +180,12 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Blue",
+   "title": "Pending"
+  }
+ ],
  "track_changes": 1,
  "track_seen": 1,
  "track_views": 1

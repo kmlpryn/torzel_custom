@@ -96,7 +96,7 @@ class GatePass(Document):
             if (total_gate_pass_qty or 0) > (sauda_quantity_with_deviation or 0):
                 frappe.throw(
                     _("The total quantity for Gate Passes ({0} kg) exceeds the total Sauda quantity ({1} kg).")
-                    .format(total_gate_pass_qty, sauda_quantity_with_deviation)
+                    .format(total_gate_pass_qty, sauda.total_quantity)
                 )
 
 

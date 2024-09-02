@@ -9,6 +9,7 @@ class Sauda(Document):
         self.calculate_amount_in_sauda_item_table()
         self.calculate_total_quantity()
         self.calculate_total_amount()
+        self.check_expiry_date()
 
     def calculate_total_quantity(self):
         """
@@ -35,3 +36,8 @@ class Sauda(Document):
     def calculate_amount_in_sauda_item_table(self):
         for item in self.get("sauda_item_table"):
             item.amount = (item.quantity or 0) * (item.rate or 0)
+            
+    def check_expiry_date(self):
+        if self.expiry_date and self.date:
+            if self.expiry_date < self.date:
+                frappe.throw(("Expiry Date must be same or greater than Document Date."))

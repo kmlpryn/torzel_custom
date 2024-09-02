@@ -38,13 +38,13 @@ class BarcodeGenerator(Document):
         # Extract items from Barcode Generator to create the Stock Entry items
         items = [{
            'item_code': self.raw_material,
-            'qty': self.gross_weight,
+            'qty': self.net_weight,
             's_warehouse': self.source_warehouse,  # Source warehouse (if applicable)
             't_warehouse': None,  # Target warehouse
         },
         {
            'item_code': self.finished_product,
-            'qty': self.gross_weight,
+            'qty': self.net_weight,
             's_warehouse': None,  # Source warehouse (if applicable)
             't_warehouse': self.target_warehouse,  # Target warehouse
         }
