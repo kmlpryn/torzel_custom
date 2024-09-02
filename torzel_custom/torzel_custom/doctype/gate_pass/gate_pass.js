@@ -92,6 +92,7 @@ function updateTareWeight(frm) {
     frm.refresh_field('tare_weight');
 }
 
+
 let lastPort = null;
 let currentRow = null;
 
@@ -125,10 +126,10 @@ const setupSerialPort = (frm) => {
     // Capture Weight Button
     frm.add_custom_button(__('Capture Weight'), function () {
         if (currentRow) {
-            const grossWeight = frm.doc.gross_weight;
-            if (grossWeight) {
-                frappe.model.set_value(currentRow.doctype, currentRow.name, 'gross_weight', grossWeight);
-                frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
+            const grossQty = frappe.model.get_value(currentRow.doctype, currentRow.name, 'gross_qty');
+            if (grossQty) {
+                frappe.model.set_value(currentRow.doctype, currentRow.name, 'gross_qty', grossQty);
+                frappe.msgprint(__('Weight captured and set in gross_qty: ') + grossQty + ' kg');
             } else {
                 frappe.msgprint(__('No weight available to capture.'));
             }
@@ -159,7 +160,7 @@ const startPreviewingWeight = async (port, frm) => {
     const reader = textDecoder.readable.getReader();
 
     try {
-        // Continuously read data from the serial device and update the gross_weight field
+        // Continuously read data from the serial device
         while (true) {
             const { value, done } = await reader.read();
             if (done) {
@@ -170,8 +171,11 @@ const startPreviewingWeight = async (port, frm) => {
             const valueArr = (value || "").split(" ");
             for (const val of valueArr) {
                 if (!isNaN(+val)) {
-                    frm.set_value('gross_weight', val.trim());
-                    console.log('Weight preview:', val.trim());
+                    const weight = val.trim();
+                    if (currentRow) {
+                        frappe.model.set_value(currentRow.doctype, currentRow.name, 'gross_qty', weight);
+                        console.log('Weight preview set in gross_qty:', weight);
+                    }
                     break;  // Break to prevent updating multiple values in one read
                 }
             }
@@ -188,19 +192,9 @@ const startPreviewingWeight = async (port, frm) => {
 };
 
 frappe.ui.form.on('Gate Pass Item', {
-    refresh: function (frm) {
-        if ("serial" in navigator) {
-            setupSerialPort(frm);
-        } else {
-            frappe.msgprint({
-                message: __("Please use Google Chrome browser"),
-                title: __("Web Serial API is not supported."),
-                indicator: "red",
-            });
-        }
-    },
-    gate_pass_item_table_rowclick: function (frm, cdt, cdn) {
+    gross_qty: function (frm, cdt, cdn) {  // Replace `qty` with a field of interest
         currentRow = locals[cdt][cdn];
+        frappe.msgprint(__('Row selected with ID: ') + currentRow.name);
     },
     bags_no: function (frm) {
         calculateQty(frm);
