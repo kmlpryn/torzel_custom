@@ -130,6 +130,9 @@ doctype_js = {
 doc_events = {
     "Purchase Order": {
         "validate": "torzel_custom.custom_folder.purchase_order.purchase_order.custom_validate_gate_pass"
+    },
+    "Delivery Note": {
+        "before_submit": "torzel_custom.custom_folder.delivery_note.delivery_note.before_submit"
     }
 }
 

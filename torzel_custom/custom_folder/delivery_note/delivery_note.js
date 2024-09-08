@@ -1,7 +1,7 @@
 frappe.ui.form.on('Delivery Note', {
     scan_barcode: function (frm) {
         return scan_barcode_and_populate_items(frm);
-    }
+    },
 });
 
 
@@ -49,8 +49,16 @@ async function scan_barcode_and_populate_items(frm) {
 async function populate_items_from_barcode(frm, barcode_doc) {
     if (barcode_doc) {
         let item_doc = await frappe.db.get_doc('Item', barcode_doc.finished_product);
-        console.log(item_doc)
-        let row = frm.add_child('items');
+        // Check if the first row in the items table exists
+        let row;
+
+        if (frm.doc.items && frm.doc.items.length === 1 && !frm.doc.items[0].item_code) {
+            // Append data to the first row
+            row = frm.doc.items[0];
+        } else {
+            // No rows exist, so add a new row
+            row = frm.add_child('items');
+        }
         row.qty = barcode_doc.gross_weight;
         row.item_code = item_doc.name;
         row.item_name = item_doc.item_name;

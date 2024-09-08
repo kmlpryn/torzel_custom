@@ -52,3 +52,5 @@ class BarcodeGenerator(Document):
         ]
           
         return items
+    
+

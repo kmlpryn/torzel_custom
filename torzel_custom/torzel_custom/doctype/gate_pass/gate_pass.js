@@ -202,7 +202,6 @@ frappe.ui.form.on('Gate Pass Item', {
     gross_qty: function (frm, cdt, cdn) {
         calculateGrossQty(frm);
         currentRow = locals[cdt][cdn];
-        frappe.msgprint(__('Row selected with ID: ') + currentRow.name);
     }
 });
 

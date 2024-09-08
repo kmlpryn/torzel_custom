@@ -1,4 +1,7 @@
 frappe.ui.form.on("Barcode Generator", {
+    net_weight: function (frm) {
+        calculate_length(frm);
+    },
     refresh(frm) {
         if ("serial" in navigator) {
             setupSerialPort(frm);
@@ -94,3 +97,43 @@ const startPreviewingWeight = async (port, frm) => {
         });
     }
 };
+
+
+async function calculate_length(frm) {
+    // Ensure item_code is available
+    if (!frm.doc.finished_product) {
+        frappe.msgprint(__('Please select finished product.'));
+        return;
+    }
+
+    // Fetch custom_factor_of_calculation from the Items Doctype
+    let custom_factor = await fetch_custom_factor_of_calculation(frm.doc.finished_product);
+
+    if (custom_factor !== null) {
+        let net_weight = frm.doc.net_weight || 0;
+
+        // Calculate the length
+        let length = custom_factor * net_weight;
+
+        // Set the calculated value to the length field
+        frm.set_value('length', length);
+    } else {
+        frappe.msgprint(__('Unable to fetch custom factor for the selected item.'));
+    }
+}
+
+async function fetch_custom_factor_of_calculation(item_code) {
+    try {
+        // Fetch the custom_factor_of_calculation from the Items Doctype
+        let response = await frappe.db.get_value('Item', { 'item_code': item_code }, 'custom_factor_of_calculation');
+
+        if (response && response.message && response.message.custom_factor_of_calculation) {
+            return response.message.custom_factor_of_calculation;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error('Error fetching custom_factor_of_calculation:', err);
+        return null;
+    }
+}
