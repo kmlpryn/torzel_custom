@@ -21,7 +21,7 @@ async function scan_barcode_and_populate_items(frm) {
             barcode_doc = await frappe.db.get_doc('Barcode Generator', scanned_barcode);
             if (barcode_doc) {
                 // If barcode exists in Barcode Generator Doctype, populate the items
-                await populate_items_from_barcode(frm, barcode_doc);
+                await populate_items_from_barcode(frm, barcode_doc, null);
             }
         } catch (e) {
             console.log('Barcode not found in Barcode Doctype, checking BigBox Doctype...');
@@ -35,7 +35,7 @@ async function scan_barcode_and_populate_items(frm) {
             for (let barcode of bigbox_doc.barcode_list) {
                 let inner_barcode_doc = await frappe.db.get_doc('Barcode Generator', barcode.barcode_number);
                 if (inner_barcode_doc) {
-                    await populate_items_from_barcode(frm, inner_barcode_doc);
+                    await populate_items_from_barcode(frm, inner_barcode_doc, bigbox_doc);
                 }
             }
         }
@@ -46,7 +46,7 @@ async function scan_barcode_and_populate_items(frm) {
     frm.set_value('scan_barcode', '');
 }
 
-async function populate_items_from_barcode(frm, barcode_doc) {
+async function populate_items_from_barcode(frm, barcode_doc, bigbox_doc) {
     if (barcode_doc) {
         let item_doc = await frappe.db.get_doc('Item', barcode_doc.finished_product);
         // Check if the first row in the items table exists
@@ -65,6 +65,7 @@ async function populate_items_from_barcode(frm, barcode_doc) {
         row.rate = item_doc.standard_rate || 0;
         row.uom = item_doc.stock_uom;
         row.barcode = barcode_doc.name;
+        row.custom_big_box_barcode = bigbox_doc ? bigbox_doc.name : null
         // Set other fields as necessary
         frm.refresh_field('items');
     }
