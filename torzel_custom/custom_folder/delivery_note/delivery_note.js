@@ -64,6 +64,7 @@ async function populate_items_from_barcode(frm, barcode_doc) {
         row.item_name = item_doc.item_name;
         row.rate = item_doc.standard_rate || 0;
         row.uom = item_doc.stock_uom;
+        row.barcode = barcode_doc.name;
         // Set other fields as necessary
         frm.refresh_field('items');
     }

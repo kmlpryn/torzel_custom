@@ -1,14 +1,33 @@
 import frappe
 
 def before_submit(doc, method):
-    check_unique_items(doc)
+    check_unique_barcodes(doc)
+    
+def before_save(doc, method):
+    check_unique_barcodes(doc)
 
-def check_unique_items(doc):
+def check_unique_barcodes(doc):
+    # Track barcodes within the same Delivery Note
+    barcode_list = []
+
     for item in doc.items:
-        # Check if this item exists in any other Delivery Note, excluding returned items
+        # Assuming each item has a field `barcode` (or replace it with the actual field name)
+        if not item.barcode:
+            continue  # Skip if no barcode is available for the item
+
+        # Check if this barcode is already in the current Delivery Note (duplicate barcode within the same doc)
+        if item.barcode in barcode_list:
+            frappe.throw(
+                f"Barcode {item.barcode} appears multiple times in the same Delivery Note."
+            )
+
+        # Add barcode to the list for internal duplicate check
+        barcode_list.append(item.barcode)
+
+        # Check if this barcode exists in any other Delivery Note, excluding returned items
         existing_delivery_note = frappe.db.sql("""
             SELECT parent FROM `tabDelivery Note Item`
-            WHERE item_code = %s
+            WHERE barcode = %s
             AND parent != %s
             AND EXISTS (
                 SELECT name FROM `tabDelivery Note`
@@ -16,10 +35,10 @@ def check_unique_items(doc):
                 AND `tabDelivery Note`.docstatus = 1
                 AND `tabDelivery Note`.is_return != 1
             )
-        """, (item.item_code, doc.name))
+        """, (item.barcode, doc.name))
 
         if existing_delivery_note:
             frappe.throw(
-                f"Item {item.item_code} already exists in another Delivery Note ({existing_delivery_note[0][0]})."
+                f"Barcode {item.barcode} already exists in another Delivery Note ({existing_delivery_note[0][0]})."
                 " You can only add returned items."
             )

@@ -132,7 +132,8 @@ doc_events = {
         "validate": "torzel_custom.custom_folder.purchase_order.purchase_order.custom_validate_gate_pass"
     },
     "Delivery Note": {
-        "before_submit": "torzel_custom.custom_folder.delivery_note.delivery_note.before_submit"
+        "before_submit": "torzel_custom.custom_folder.delivery_note.delivery_note.before_submit",
+        'before_save':"torzel_custom.custom_folder.delivery_note.delivery_note.before_save",
     }
 }
 
