@@ -5,39 +5,20 @@
  "disabled": 0,
  "docstatus": 0,
  "doctype": "Report",
- "filters": [
-  {
-   "default": "",
-   "fieldname": "filter_expiry_date",
-   "fieldtype": "Date",
-   "label": "Expiry date filter",
-   "mandatory": 1,
-   "options": "",
-   "wildcard_filter": 0
-  },
-  {
-   "default": "",
-   "fieldname": "filter_date",
-   "fieldtype": "Date",
-   "label": "Created date filter",
-   "mandatory": 1,
-   "options": "",
-   "wildcard_filter": 0
-  }
- ],
+ "filters": [],
  "idx": 0,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2024-09-09 01:02:04.771796",
+ "modified": "2024-09-14 16:44:45.355146",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Sauda Gate Pass Report",
  "owner": "Administrator",
  "prepared_report": 0,
- "query": "SELECT\n    sauda.name AS \"sauda_name:Link/Sauda\",\n    sauda.supplier AS customer,\n    sauda.expiry_date AS expiry_date,\n    CASE\n        WHEN sauda.expiry_date < CURDATE() THEN 'Yes'\n        ELSE 'No'\n    END AS \"Expired\",\n    sauda.total_quantity AS sauda_total_quantity,\n    IFNULL(SUM(gate_pass.total_gw_qty), 0) AS total_gate_pass_quantity,\n    (sauda.total_quantity - IFNULL(SUM(gate_pass.total_gw_qty), 0)) AS remaining_quantity\nFROM\n    `tabSauda` sauda\nLEFT JOIN\n    `tabGate Pass` gate_pass ON gate_pass.sauda = sauda.name\nWHERE\n    sauda.docstatus = 1  -- Only consider submitted Sauda\n    AND (sauda.expiry_date = %(filter_expiry_date)s\n    OR sauda.date >= %(filter_date)s)\n    \nGROUP BY\n    sauda.name\nHAVING\n    remaining_quantity > 0  -- Only show Sauda with pending quantities\nORDER BY\n    remaining_quantity DESC;",
+ "query": "# Define the DocTypes\nSauda = DocType(\"Sauda\")\nGatePass = DocType(\"Gate Pass\")\n\n# Initialize the base query\nquery = (\n    db.get_query_builder()\n    .from_(Sauda)\n    .left_join(GatePass)\n    .on(GatePass.sauda == Sauda.name)\n    .select(\n        Sauda.name.as_(\"sauda_name\"),\n        Sauda.supplier.as_(\"customer\"),\n        Sauda.expiry_date.as_(\"expiry_date\"),\n        (Sauda.expiry_date < db.now()).as_(\"Expired\"),\n        Sauda.total_quantity.as_(\"sauda_total_quantity\"),\n        IfNull(Sum(GatePass.total_gw_qty), 0).as_(\"total_gate_pass_quantity\"),\n        (Sauda.total_quantity - IfNull(Sum(GatePass.total_gw_qty), 0)).as_(\"remaining_quantity\")\n    )\n    .where(Sauda.docstatus == 1)  # Only consider submitted Sauda\n    .groupby(Sauda.name)\n    .having((Sauda.total_quantity - IfNull(Sum(GatePass.total_gw_qty), 0)) > 0)  # Only show pending quantities\n    .orderby((Sauda.total_quantity - IfNull(Sum(GatePass.total_gw_qty), 0)), order=\"desc\")\n)\n\n# Apply filters dynamically\nif frappe.form_dict.get('filter_expiry_date'):\n    query = query.where(Sauda.expiry_date == frappe.form_dict.get('filter_expiry_date'))\n\nif frappe.form_dict.get('filter_date'):\n    query = query.where(Sauda.date >= frappe.form_dict.get('filter_date'))\n\n# Execute the query\ndata = query.run(as_dict=True)",
  "ref_doctype": "Sauda",
  "report_name": "Sauda Gate Pass Report",
- "report_type": "Query Report",
+ "report_type": "Script Report",
  "roles": [
   {
    "role": "System Manager"
