@@ -7,6 +7,10 @@ def before_save(doc, method):
     check_unique_barcodes(doc)
 
 def check_unique_barcodes(doc):
+    # Bypass barcode check if Delivery Note is in return mode
+    if doc.is_return == 1:
+        return
+
     # Track barcodes within the same Delivery Note
     barcode_list = []
 

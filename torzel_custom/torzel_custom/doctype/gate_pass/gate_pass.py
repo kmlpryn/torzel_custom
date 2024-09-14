@@ -5,6 +5,32 @@ import frappe
 from frappe.model.document import Document
 from frappe import _
 
+@frappe.whitelist()
+def get_available_sauda(supplier):
+    query = """
+        SELECT
+            sauda.name,
+            sauda.total_quantity,
+            IFNULL(SUM(gate_pass.total_gw_qty), 0) AS total_gate_pass_quantity,
+            (sauda.total_quantity - IFNULL(SUM(gate_pass.total_gw_qty), 0)) AS remaining_quantity
+        FROM
+            `tabSauda` sauda
+        LEFT JOIN
+            `tabGate Pass` gate_pass ON gate_pass.sauda = sauda.name
+            AND gate_pass.docstatus = 1
+        WHERE
+            sauda.docstatus = 1
+            AND sauda.supplier = 'supplier_id_here'
+            AND sauda.expiry_date >= CURDATE()
+        GROUP BY
+            sauda.name
+        HAVING
+            remaining_quantity > 0
+    """
+    
+    return frappe.db.sql(query, {"supplier": supplier}, as_dict=True)
+
+
 class GatePass(Document):
     def validate(self):
         self.update_tare_weight()

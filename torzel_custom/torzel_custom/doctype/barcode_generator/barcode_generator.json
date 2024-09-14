@@ -25,7 +25,11 @@
   "tare_weight",
   "column_break_bcfp",
   "length",
-  "gross_weight"
+  "gross_weight",
+  "section_break_jdio",
+  "machine_operator",
+  "column_break_vlcb",
+  "name_of_machine_operator"
  ],
  "fields": [
   {
@@ -154,12 +158,33 @@
    "non_negative": 1,
    "precision": "2",
    "reqd": 1
+  },
+  {
+   "fieldname": "section_break_jdio",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "machine_operator",
+   "fieldtype": "Link",
+   "label": "Machine Operator",
+   "options": "Machine Operator"
+  },
+  {
+   "fieldname": "column_break_vlcb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine_operator.operator_name",
+   "fieldname": "name_of_machine_operator",
+   "fieldtype": "Data",
+   "label": "Name of Machine Operator",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-25 19:52:27.369278",
+ "modified": "2024-09-14 20:01:35.900633",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Barcode Generator",

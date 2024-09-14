@@ -3,12 +3,12 @@
 
 frappe.ui.form.on("Gate Pass", {
     refresh: function (frm) {
-        // Setting custom query for sauda field 
         frm.set_query("sauda", function () {
             return {
                 "filters": [
                     ["Sauda", "docstatus", "=", 1],
                     ["Sauda", "supplier", "=", frm.doc.supplier],
+                    ["Sauda", "expiry_date", ">=", frappe.datetime.get_today()],  // Filter out expired Sauda
                 ]
             };
         });
@@ -91,7 +91,6 @@ function updateTareWeight(frm) {
 
     frm.refresh_field('tare_weight');
 }
-
 
 let lastPort = null;
 let currentRow = null;
