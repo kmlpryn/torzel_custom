@@ -64,6 +64,29 @@ frappe.ui.form.on('Purchase Order', {
     }
 })
 
+frappe.ui.form.on('Purchase Order Item', {
+    custom_gross_weight: function (frm) {
+        calculateQty(frm);
+    },
+    custom_tare_weight: function (frm) {
+        calculateQty(frm);
+    },
+});
+
+function calculateQty(frm) {
+    let gross_weight = frm.doc.custom_gross_weight;
+    let tare_weight = frm.doc.custom_tare_weight;
+
+    if (gross_weight && tare_weight) {
+        let net_weight = gross_weight - tare_weight;
+        frm.set_value('qty', net_weight);
+    } else {
+        frm.set_value('qty', '');
+    }
+
+    frm.refresh_field('qty');
+}
+
 // Function for excluding already attached Gate Passes 
 // Function to fetch already linked Gate Passes for a supplier
 // Synchronous function to fetch linked Gate Passes

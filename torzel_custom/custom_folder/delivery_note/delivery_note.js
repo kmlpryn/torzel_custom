@@ -59,12 +59,15 @@ async function populate_items_from_barcode(frm, barcode_doc, bigbox_doc) {
             // No rows exist, so add a new row
             row = frm.add_child('items');
         }
-        row.qty = barcode_doc.gross_weight;
+        row.qty = barcode_doc.net_weight;
         row.item_code = item_doc.name;
         row.item_name = item_doc.item_name;
         row.rate = item_doc.standard_rate || 0;
         row.uom = item_doc.stock_uom;
         row.barcode = barcode_doc.name;
+        row.custom_barcode_link = barcode_doc.name;
+        row.custom_gross_weight = barcode_doc.gross_weight;
+        row.custom_tare_weight = barcode_doc.tare_weight;
         row.custom_big_box_barcode = bigbox_doc ? bigbox_doc.name : null
         // Set other fields as necessary
         frm.refresh_field('items');

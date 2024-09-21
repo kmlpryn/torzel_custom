@@ -19,13 +19,16 @@
   "target_warehouse",
   "material_section",
   "raw_material",
-  "net_weight",
   "column_break_epjd",
   "finished_product",
-  "tare_weight",
   "column_break_bcfp",
   "length",
+  "material_weight_section",
+  "net_weight",
+  "column_break_ndxa",
   "gross_weight",
+  "column_break_ppzj",
+  "tare_weight",
   "section_break_jdio",
   "machine_operator",
   "column_break_vlcb",
@@ -179,12 +182,25 @@
    "fieldtype": "Data",
    "label": "Name of Machine Operator",
    "read_only": 1
+  },
+  {
+   "fieldname": "material_weight_section",
+   "fieldtype": "Section Break",
+   "label": "Material Weight"
+  },
+  {
+   "fieldname": "column_break_ndxa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_ppzj",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-14 20:01:35.900633",
+ "modified": "2024-09-21 16:21:05.940791",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Barcode Generator",
