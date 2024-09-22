@@ -44,5 +44,5 @@ def check_unique_barcodes(doc):
         if existing_delivery_note:
             frappe.throw(
                 f"Barcode {item.barcode} already exists in another Delivery Note ({existing_delivery_note[0][0]})."
-                " You can only add returned items."
+                " Please create new barcode."
             )

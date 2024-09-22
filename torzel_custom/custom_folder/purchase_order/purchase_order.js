@@ -65,26 +65,28 @@ frappe.ui.form.on('Purchase Order', {
 })
 
 frappe.ui.form.on('Purchase Order Item', {
-    custom_gross_weight: function (frm) {
-        calculateQty(frm);
+    custom_gross_weight: function (frm, cdt, cdn) {
+        calculateQty(frm, cdt, cdn);
     },
-    custom_tare_weight: function (frm) {
-        calculateQty(frm);
-    },
+    custom_tare_weight: function (frm, cdt, cdn) {
+        calculateQty(frm, cdt, cdn);
+    }
 });
 
-function calculateQty(frm) {
-    let gross_weight = frm.doc.custom_gross_weight;
-    let tare_weight = frm.doc.custom_tare_weight;
+function calculateQty(frm, cdt, cdn) {
+    let row = locals[cdt][cdn]; // Access the current child row
+
+    let gross_weight = row.custom_gross_weight;
+    let tare_weight = row.custom_tare_weight;
 
     if (gross_weight && tare_weight) {
         let net_weight = gross_weight - tare_weight;
-        frm.set_value('qty', net_weight);
+        frappe.model.set_value(cdt, cdn, 'qty', net_weight); // Set the 'qty' field in the child table row
     } else {
-        frm.set_value('qty', '');
+        frappe.model.set_value(cdt, cdn, 'qty', '');
     }
 
-    frm.refresh_field('qty');
+    frm.refresh_field('items'); // Refresh the child table
 }
 
 // Function for excluding already attached Gate Passes 

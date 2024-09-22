@@ -2,6 +2,12 @@ frappe.ui.form.on("Barcode Generator", {
     net_weight: function (frm) {
         calculate_length(frm);
     },
+    gross_weight: function (frm) {
+        calculate_net_weight(frm)
+    },
+    tare_weight: function (frm) {
+        calculate_net_weight(frm)
+    },
     refresh(frm) {
         if ("serial" in navigator) {
             setupSerialPort(frm);
@@ -119,6 +125,18 @@ async function calculate_length(frm) {
         frm.set_value('length', length);
     } else {
         frappe.msgprint(__('Unable to fetch custom factor for the selected item.'));
+    }
+}
+
+const calculate_net_weight = (frm) => {
+    let gross_weight = parseFloat(frm.doc.gross_weight) || 0;
+    let tare_weight = parseFloat(frm.doc.tare_weight) || 0;
+
+    if (gross_weight && tare_weight) {
+        let net_weight = gross_weight - tare_weight;
+        frm.set_value('net_weight', net_weight);
+    } else {
+        frm.set_value('net_weight', '');
     }
 }
 
