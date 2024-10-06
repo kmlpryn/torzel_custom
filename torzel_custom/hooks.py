@@ -134,6 +134,7 @@ doc_events = {
     "Delivery Note": {
         "before_submit": "torzel_custom.custom_folder.delivery_note.delivery_note.before_submit",
         'before_save':"torzel_custom.custom_folder.delivery_note.delivery_note.before_save",
+        "before_print": "torzel_custom.custom_folder.delivery_note.delivery_note.before_print_delivery_note"
     }
 }
 
