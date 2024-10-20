@@ -1,12 +1,21 @@
 frappe.ui.form.on("Barcode Generator", {
     net_weight: function (frm) {
         calculate_length(frm);
+        calculate_dispatched_weights(frm);
     },
     gross_weight: function (frm) {
-        calculate_net_weight(frm)
+        calculate_net_weight(frm);
+        calculate_dispatched_weights(frm);
     },
     tare_weight: function (frm) {
-        calculate_net_weight(frm)
+        calculate_net_weight(frm);
+        calculate_dispatched_weights(frm);
+    },
+    net_weight_diff: function (frm) {
+        calculate_dispatched_weights(frm);
+    },
+    tare_weight_diff: function (frm) {
+        calculate_dispatched_weights(frm);
     },
     refresh(frm) {
         if ("serial" in navigator) {
@@ -128,6 +137,23 @@ async function calculate_length(frm) {
     }
 }
 
+const calculate_dispatched_weights = (frm) => {
+    let tare_weight = parseFloat(frm.doc.tare_weight) || 0;
+    let tare_weight_diff = parseFloat(frm.doc.tare_weight_diff) || 0;
+    let net_weight = parseFloat(frm.doc.net_weight) || 0;
+    let net_weight_diff = parseFloat(frm.doc.net_weight_diff) || 0;
+
+    let dispatched_tare_weight = tare_weight + tare_weight_diff;
+    let dispatched_net_weight = net_weight + net_weight_diff;
+
+    frm.set_value('dispatched_tare_weight', dispatched_tare_weight);
+    frm.set_value('dispatched_net_weight', dispatched_net_weight);
+
+    // Dispatched Gross Weight = Dispatched Tare Weight + Dispatched Net Weight
+    let dispatched_gross_weight = dispatched_tare_weight + dispatched_net_weight;
+    frm.set_value('dispatched_gross_weight', dispatched_gross_weight);
+};
+
 const calculate_net_weight = (frm) => {
     let gross_weight = parseFloat(frm.doc.gross_weight) || 0;
     let tare_weight = parseFloat(frm.doc.tare_weight) || 0;
@@ -138,7 +164,7 @@ const calculate_net_weight = (frm) => {
     } else {
         frm.set_value('net_weight', '');
     }
-}
+};
 
 async function fetch_custom_factor_of_calculation(item_code) {
     try {

@@ -35,22 +35,62 @@ class BarcodeGenerator(Document):
 
     def get_items(self):
         print("Barcode Items", self)
-        # Extract items from Barcode Generator to create the Stock Entry items
-        items = [{
-           'item_code': self.raw_material,
-            'qty': self.net_weight,
-            's_warehouse': self.source_warehouse,  # Source warehouse (if applicable)
-            't_warehouse': None,  # Target warehouse
-        },
-        {
-           'item_code': self.finished_product,
-            'qty': self.net_weight,
-            's_warehouse': None,  # Source warehouse (if applicable)
-            't_warehouse': self.target_warehouse,  # Target warehouse
-        }
-                 
+        net_weight_diff_defaults = self.get_default_warehouse('net_weight_diff')
+        tare_weight_diff_defaults = self.get_default_warehouse('tare_weight_diff')
+
+        # Extract items using dispatched weights
+        items = [
+            {
+                'item_code': self.raw_material,
+                'qty': self.dispatched_net_weight,  # Use Dispatched Net Weight
+                's_warehouse': self.source_warehouse,
+                't_warehouse': None,
+            },
         ]
+        
+         # Add Net Weight Difference item if applicable
+        if self.net_weight_diff != 0:
+            items.append({
+                'item_code': 'net_weight_diff',
+                'qty': abs(self.net_weight_diff),
+                's_warehouse': net_weight_diff_defaults['source_warehouse'] if self.net_weight_diff > 0 else None,
+                't_warehouse': None if self.net_weight_diff > 0 else net_weight_diff_defaults['target_warehouse']
+            })
+
+        # Add Tare Weight Difference item if applicable
+        if self.tare_weight_diff != 0:
+            items.append({
+                'item_code': 'tare_weight_diff',
+                'qty': abs(self.tare_weight_diff),
+                's_warehouse': tare_weight_diff_defaults['source_warehouse'] if self.tare_weight_diff > 0 else None,
+                't_warehouse': None if self.tare_weight_diff > 0 else tare_weight_diff_defaults['target_warehouse']
+            })
+            
+        items.append({
+                'item_code': self.finished_product,
+                'qty': self.dispatched_net_weight,  # Use Dispatched Net Weight
+                's_warehouse': None,
+                't_warehouse': self.target_warehouse,
+        })
           
         return items
+    
+    
+    def get_default_warehouse(self, item_code):
+        """
+        Fetch the default warehouse for a given item from Item Default table.
+        Returns a dictionary with 'source_warehouse' and 'target_warehouse'.
+        """
+        item_defaults = frappe.db.get_value('Item Default', {'parent': item_code}, 
+                                            ['default_warehouse'], as_dict=True)
+
+        if not item_defaults or not item_defaults.default_warehouse:
+            frappe.throw(f"Default Warehouse not found for item {item_code}")
+
+        # Return the default warehouse as both source and target (customize as needed)
+        return {
+            'source_warehouse': item_defaults.default_warehouse,
+            'target_warehouse': item_defaults.default_warehouse
+        }
     
 

@@ -30,6 +30,18 @@
   "tare_weight",
   "column_break_crvt",
   "net_weight",
+  "difference_in_weight_section",
+  "column_break_nbub",
+  "column_break_cycy",
+  "tare_weight_diff",
+  "column_break_rcge",
+  "net_weight_diff",
+  "dispatch_weight_section",
+  "dispatched_gross_weight",
+  "column_break_gvhf",
+  "dispatched_tare_weight",
+  "column_break_rzfv",
+  "dispatched_net_weight",
   "section_break_jdio",
   "machine_operator",
   "column_break_vlcb",
@@ -200,12 +212,72 @@
   {
    "fieldname": "column_break_crvt",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "difference_in_weight_section",
+   "fieldtype": "Section Break",
+   "label": "Difference in weight"
+  },
+  {
+   "fieldname": "column_break_nbub",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_cycy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_rcge",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dispatch_weight_section",
+   "fieldtype": "Section Break",
+   "label": "Dispatch Weight"
+  },
+  {
+   "fieldname": "dispatched_gross_weight",
+   "fieldtype": "Float",
+   "label": "Dispatched Gross Weight",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_gvhf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dispatched_tare_weight",
+   "fieldtype": "Float",
+   "label": "Dispatched Tare Weight",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_rzfv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dispatched_net_weight",
+   "fieldtype": "Float",
+   "label": "Dispatched Net Weight",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "tare_weight_diff",
+   "fieldtype": "Float",
+   "label": "Tare Weight Difference"
+  },
+  {
+   "default": "0",
+   "fieldname": "net_weight_diff",
+   "fieldtype": "Float",
+   "label": "Net Weight Difference"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-22 12:26:41.049895",
+ "modified": "2024-10-21 00:32:21.822981",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Barcode Generator",
