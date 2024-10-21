@@ -37,12 +37,13 @@ class BarcodeGenerator(Document):
         print("Barcode Items", self)
         net_weight_diff_defaults = self.get_default_warehouse('net_weight_diff')
         tare_weight_diff_defaults = self.get_default_warehouse('tare_weight_diff')
+        final_net_weight = self.net_weight
 
         # Extract items using dispatched weights
         items = [
             {
                 'item_code': self.raw_material,
-                'qty': self.dispatched_net_weight,  # Use Dispatched Net Weight
+                'qty': self.net_weight,  # Use Dispatched Net Weight
                 's_warehouse': self.source_warehouse,
                 't_warehouse': None,
             },
@@ -50,6 +51,7 @@ class BarcodeGenerator(Document):
         
          # Add Net Weight Difference item if applicable
         if self.net_weight_diff != 0:
+            final_net_weight = final_net_weight + self.net_weight_diff
             items.append({
                 'item_code': 'net_weight_diff',
                 'qty': abs(self.net_weight_diff),
@@ -59,6 +61,7 @@ class BarcodeGenerator(Document):
 
         # Add Tare Weight Difference item if applicable
         if self.tare_weight_diff != 0:
+            final_net_weight = final_net_weight + self.tare_weight_diff
             items.append({
                 'item_code': 'tare_weight_diff',
                 'qty': abs(self.tare_weight_diff),
@@ -68,7 +71,7 @@ class BarcodeGenerator(Document):
             
         items.append({
                 'item_code': self.finished_product,
-                'qty': self.dispatched_net_weight,  # Use Dispatched Net Weight
+                'qty': final_net_weight,  # Use Dispatched Net Weight
                 's_warehouse': None,
                 't_warehouse': self.target_warehouse,
         })
