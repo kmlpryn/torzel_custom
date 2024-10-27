@@ -2,6 +2,15 @@ import frappe
 
 def execute(filters=None):
     # Define the SQL queries for CPA13 and IL4 separately
+    if not filters:
+    	filters = {}
+
+    # Ensure filters have default values to avoid KeyErrors
+    from_date = filters.get("from_date", "2024-01-01")  # Set a default from date
+    party = filters.get("party", None)
+    
+    if not party:
+    	frappe.throw("Party must be specified")
 
     # CPA13 Query
     cpa13_query = """
@@ -175,8 +184,8 @@ def execute(filters=None):
         posting_date,
         voucher_type,
         voucher_no,
-        inward_quantity,
-        outward_quantity,
+        inward_quantity as debit,
+        outward_quantity as credit,
         item_code
     FROM (
         SELECT * FROM Inventory_Details
@@ -195,23 +204,30 @@ def execute(filters=None):
 
     # Define columns for the combined report
     columns = [
-        {"fieldname": "posting_date", "label": "Posting Date", "fieldtype": "Date", "width": 100},
-        {"fieldname": "voucher_type", "label": "Voucher Type", "fieldtype": "Data", "width": 120},
-        {"fieldname": "voucher_no", "label": "Voucher No", "fieldtype": "Data", "width": 100},
-        {"fieldname": "debit", "label": "Debit", "fieldtype": "Currency", "width": 100},
-        {"fieldname": "credit", "label": "Credit", "fieldtype": "Currency", "width": 100},
-        {"fieldname": "item_code", "label": "Item Code", "fieldtype": "Data", "width": 100},
-        {"fieldname": "quantity", "label": "Quantity", "fieldtype": "Float", "width": 80},
-        {"fieldname": "rate", "label": "Rate", "fieldtype": "Currency", "width": 100},
-        {"fieldname": "inward_quantity", "label": "Inward Quantity", "fieldtype": "Float", "width": 80},
-        {"fieldname": "outward_quantity", "label": "Outward Quantity", "fieldtype": "Float", "width": 80}
+        {"fieldname": "posting_date", "label": "Posting Date", "fieldtype": "Date", "width": 120},
+        {"fieldname": "voucher_type", "label": "Voucher Type", "fieldtype": "Data", "width": 180},
+        {"fieldname": "voucher_no", "label": "Voucher No", "fieldtype": "Data", "width": 200},
+        {"fieldname": "debit", "label": "Debit", "fieldtype": "Data", "width": 180},
+        {"fieldname": "credit", "label": "Credit", "fieldtype": "Data", "width": 180},
+        {"fieldname": "item_code", "label": "Item Code", "fieldtype": "Data", "width": 120},
+        {"fieldname": "quantity", "label": "Quantity", "fieldtype": "Data", "width": 100},
+        {"fieldname": "rate", "label": "Rate", "fieldtype": "Data", "width": 120},
     ]
 
     # Add section headers for CPA13 and IL4
     combined_data = []
-    combined_data.append({"posting_date": "CPA13 Report"})
+    combined_data.append({"posting_date": None, "voucher_type": "<b>Party Ledger</b>", "voucher_no": None, "debit": None, "credit": None, "item_code": None, "quantity": None, "rate": None,})
     combined_data.extend(cpa13_data)
-    combined_data.append({"posting_date": "IL4 Report"})
+    
+    print("cpa",cpa13_data)
+    
+    combined_data.append({"posting_date": None, "voucher_type":  None, "voucher_no": None, "debit": None, "credit": None, "item_code": None, "quantity": None, "rate": None,})
+    combined_data.append({"posting_date": None, "voucher_type":  "<b>Inventory Detail</b>", "voucher_no": None, "debit": None, "credit": None, "item_code": None, "quantity": None, "rate": None, })
+    
+    # Add IL4 data
+    combined_data.append({"posting_date": "Posting Date", "voucher_type":"Voucher Type","voucher_no": "Voucher No", "debit": 'Inward Quantity', "credit": 'Outward Quantity', "item_code": "Item Code", "quantity": None, "rate": None, })
     combined_data.extend(il4_data)
+    
+    print("il4",il4_data)
 
     return columns, combined_data
