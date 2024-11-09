@@ -131,7 +131,7 @@
    "in_list_view": 1,
    "label": "Net Weight",
    "non_negative": 1,
-   "precision": "2",
+   "precision": "3",
    "reqd": 1
   },
   {
@@ -152,7 +152,7 @@
    "in_list_view": 1,
    "label": "Tare Weight",
    "non_negative": 1,
-   "precision": "2",
+   "precision": "3",
    "reqd": 1
   },
   {
@@ -172,7 +172,7 @@
    "fieldtype": "Float",
    "label": "Gross Weight",
    "non_negative": 1,
-   "precision": "2",
+   "precision": "3",
    "reqd": 1
   },
   {
@@ -239,6 +239,7 @@
    "fieldname": "dispatched_gross_weight",
    "fieldtype": "Float",
    "label": "Dispatched Gross Weight",
+   "precision": "3",
    "read_only": 1
   },
   {
@@ -249,6 +250,7 @@
    "fieldname": "dispatched_tare_weight",
    "fieldtype": "Float",
    "label": "Dispatched Tare Weight",
+   "precision": "3",
    "read_only": 1
   },
   {
@@ -259,25 +261,28 @@
    "fieldname": "dispatched_net_weight",
    "fieldtype": "Float",
    "label": "Dispatched Net Weight",
+   "precision": "3",
    "read_only": 1
   },
   {
    "default": "0",
    "fieldname": "tare_weight_diff",
    "fieldtype": "Float",
-   "label": "Tare Weight Difference"
+   "label": "Tare Weight Difference",
+   "precision": "3"
   },
   {
    "default": "0",
    "fieldname": "net_weight_diff",
    "fieldtype": "Float",
-   "label": "Net Weight Difference"
+   "label": "Net Weight Difference",
+   "precision": "3"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-21 00:32:21.822981",
+ "modified": "2024-11-09 16:25:40.275762",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Barcode Generator",
