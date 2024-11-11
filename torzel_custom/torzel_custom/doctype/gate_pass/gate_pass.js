@@ -47,6 +47,10 @@ frappe.ui.form.on("Gate Pass", {
             frappe.msgprint(__("Gross Weight cannot be less than Net Weight"));
             frappe.validated = false;
         }
+    },
+    supplier: function (frm) {
+        // Clear the Sauda field when Supplier changes
+        frm.set_value('sauda', null);
     }
 });
 
