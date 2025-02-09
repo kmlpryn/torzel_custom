@@ -68,8 +68,9 @@
    "label": "Transaction Date"
   },
   {
+   "fetch_from": "finished_product.brand",
    "fieldname": "brand",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Brand",
    "options": "Brand"
   },
@@ -282,7 +283,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-11-09 16:25:40.275762",
+ "modified": "2025-02-09 16:29:55.482642",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Barcode Generator",

@@ -18,6 +18,30 @@ frappe.ui.form.on("Barcode Generator", {
         calculate_dispatched_weights(frm);
     },
     refresh(frm) {
+        if (!frm.doc.brand) {
+            return; // No filtering if brand is not set
+        }
+
+        frappe.call({
+            method: "your_app.your_module.doctype.barcode_generator.barcode_generator.get_filtered_print_formats",
+            args: { docname: frm.doc.name },
+            callback: function (response) {
+                if (response.message) {
+                    let filtered_print_formats = response.message;
+
+                    if (filtered_print_formats.length === 0) {
+                        frappe.msgprint(`No print formats found for brand: ${frm.doc.brand}`);
+                        return;
+                    }
+
+                    // Override print format dropdown
+                    frm.print_formats = filtered_print_formats;
+
+                    console.log("Filtered Print Formats:", filtered_print_formats);
+                }
+            }
+        });
+
         if ("serial" in navigator) {
             setupSerialPort(frm);
         } else {

@@ -13,7 +13,7 @@ class BarcodeGenerator(Document):
         # Create a Stock Entry when Barcode Generator is submitted
         stock_entry = frappe.get_doc({
             'doctype': 'Stock Entry',
-            'naming_series':'BAR-.YYYY.-',
+            'naming_series': 'BAR-.YYYY.-',
             'stock_entry_type': 'Repack',  # Or appropriate type
             'items': self.get_items(),  # Implement get_items() to extract items from Barcode Generator
             'posting_date': frappe.utils.nowdate()
@@ -34,24 +34,23 @@ class BarcodeGenerator(Document):
                 stock_entry.delete()
 
     def get_items(self):
+        # Your existing logic for fetching stock items
         print("Barcode Items", self)
         net_weight_diff_defaults = self.get_default_warehouse('net_weight_diff')
         tare_weight_diff_defaults = self.get_default_warehouse('tare_weight_diff')
         final_net_weight = self.net_weight
 
-        # Extract items using dispatched weights
         items = [
             {
                 'item_code': self.raw_material,
-                'qty': self.net_weight,  # Use Dispatched Net Weight
+                'qty': self.net_weight,
                 's_warehouse': self.source_warehouse,
                 't_warehouse': None,
             },
         ]
-        
-         # Add Net Weight Difference item if applicable
+
         if self.net_weight_diff != 0:
-            final_net_weight = final_net_weight + self.net_weight_diff
+            final_net_weight += self.net_weight_diff
             items.append({
                 'item_code': 'net_weight_diff',
                 'qty': abs(self.net_weight_diff),
@@ -59,9 +58,8 @@ class BarcodeGenerator(Document):
                 't_warehouse': None if self.net_weight_diff > 0 else net_weight_diff_defaults['target_warehouse']
             })
 
-        # Add Tare Weight Difference item if applicable
         if self.tare_weight_diff != 0:
-            final_net_weight = final_net_weight + self.tare_weight_diff
+            final_net_weight += self.tare_weight_diff
             items.append({
                 'item_code': 'tare_weight_diff',
                 'qty': abs(self.tare_weight_diff),
@@ -70,15 +68,13 @@ class BarcodeGenerator(Document):
             })
             
         items.append({
-                'item_code': self.finished_product,
-                'qty': final_net_weight,  # Use Dispatched Net Weight
-                's_warehouse': None,
-                't_warehouse': self.target_warehouse,
+            'item_code': self.finished_product,
+            'qty': final_net_weight,
+            's_warehouse': None,
+            't_warehouse': self.target_warehouse,
         })
-          
+
         return items
-    
-    
     def get_default_warehouse(self, item_code):
         """
         Fetch the default warehouse for a given item from Item Default table.
@@ -95,5 +91,24 @@ class BarcodeGenerator(Document):
             'source_warehouse': item_defaults.default_warehouse,
             'target_warehouse': item_defaults.default_warehouse
         }
-    
 
+    def get_filtered_print_formats(self):
+        """Fetch only print formats that start with the brand name"""
+        if not self.brand:
+            return []
+
+        brand_lower = self.brand.lower()
+
+        print_formats = frappe.get_all("Print Format", 
+                                       filters={"doc_type": "Barcode Generator"}, 
+                                       fields=["name"])
+
+        filtered_formats = [pf["name"] for pf in print_formats if pf["name"].lower().startswith(brand_lower)]
+
+        return filtered_formats
+
+@frappe.whitelist()
+def get_filtered_print_formats(docname):
+    """Return filtered print formats for the given Barcode Generator document."""
+    doc = frappe.get_doc("Barcode Generator", docname)
+    return doc.get_filtered_print_formats()
