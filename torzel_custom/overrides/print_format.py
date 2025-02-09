@@ -1,18 +1,18 @@
 import frappe
-from frappe.printing.get_print_formats import get_print_formats as original_get_print_formats
+from frappe.utils.print_format import get_available_print_formats as original_get_available_print_formats
 
 @frappe.whitelist()
-def get_print_formats(doctype, docname=None):
+def get_available_print_formats(doctype, docname=None):
     """Override Frappe's print format fetching to filter formats based on the Barcode Generator's brand field."""
 
     if doctype != "Barcode Generator" or not docname:
-        return original_get_print_formats(doctype)
+        return original_get_available_print_formats(doctype)
 
     # Get the document to check the brand field
     doc = frappe.get_doc("Barcode Generator", docname)
 
     if not doc.brand:
-        return original_get_print_formats(doctype)
+        return original_get_available_print_formats(doctype)
 
     brand_lower = doc.brand.lower()
 

@@ -180,7 +180,7 @@ doc_events = {
 # }
 
 override_whitelisted_methods = {
-    "frappe.printing.get_print_formats": "torzel_custom.overrides.print_format.get_print_formats"
+    "frappe.utils.print_format.get_available_print_formats": "torzel_custom.overrides.print_format.get_available_print_formats"
 }
 
 #
