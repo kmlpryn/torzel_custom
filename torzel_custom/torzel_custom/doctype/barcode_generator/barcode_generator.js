@@ -18,7 +18,6 @@ frappe.ui.form.on("Barcode Generator", {
         calculate_dispatched_weights(frm);
     },
     refresh(frm) {
-
         if ("serial" in navigator) {
             setupSerialPort(frm);
         } else {
@@ -46,11 +45,23 @@ frappe.ui.form.on("Barcode Generator", {
                     }
 
                     // Manually override Frappe's print format fetching logic
-                    frappe.meta.get_print_formats = function (doctype) {
-                        if (doctype === "Barcode Generator") {
-                            return filtered_print_formats;
-                        }
-                        return frappe.meta._default_print_formats[doctype] || [];
+                    frappe.ui.get_print_settings = function (frm, callback) {
+                        frappe.call({
+                            method: "frappe.printing.get_print_formats",
+                            args: { doctype: frm.doctype },
+                            callback: function (print_response) {
+                                let available_formats = print_response.message || [];
+                                let final_formats = available_formats.filter(pf => filtered_print_formats.includes(pf));
+
+                                if (final_formats.length === 0) {
+                                    frappe.msgprint(`No matching print formats found for ${frm.doc.brand}`);
+                                }
+
+                                callback({
+                                    print_formats: final_formats
+                                });
+                            }
+                        });
                     };
 
                     console.log("Filtered Print Formats:", filtered_print_formats);
