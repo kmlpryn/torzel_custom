@@ -23,7 +23,7 @@ frappe.ui.form.on("Barcode Generator", {
         }
 
         frappe.call({
-            method: "your_app.your_module.doctype.barcode_generator.barcode_generator.get_filtered_print_formats",
+            method: "torzel_custom.torzel_custom.doctype.barcode_generator.barcode_generator.get_filtered_print_formats",
             args: { docname: frm.doc.name },
             callback: function (response) {
                 if (response.message) {
