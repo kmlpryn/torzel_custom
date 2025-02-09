@@ -18,6 +18,17 @@ frappe.ui.form.on("Barcode Generator", {
         calculate_dispatched_weights(frm);
     },
     refresh(frm) {
+
+        if ("serial" in navigator) {
+            setupSerialPort(frm);
+        } else {
+            frappe.msgprint({
+                message: __("Please use Google Chrome browser"),
+                title: __("Web Serial API is not supported."),
+                indicator: "red",
+            });
+        }
+
         if (!frm.doc.brand) {
             return; // No filtering if brand is not set
         }
@@ -34,23 +45,18 @@ frappe.ui.form.on("Barcode Generator", {
                         return;
                     }
 
-                    // Override print format dropdown
-                    frm.print_formats = filtered_print_formats;
+                    // Manually override Frappe's print format fetching logic
+                    frappe.meta.get_print_formats = function (doctype) {
+                        if (doctype === "Barcode Generator") {
+                            return filtered_print_formats;
+                        }
+                        return frappe.meta._default_print_formats[doctype] || [];
+                    };
 
                     console.log("Filtered Print Formats:", filtered_print_formats);
                 }
             }
         });
-
-        if ("serial" in navigator) {
-            setupSerialPort(frm);
-        } else {
-            frappe.msgprint({
-                message: __("Please use Google Chrome browser"),
-                title: __("Web Serial API is not supported."),
-                indicator: "red",
-            });
-        }
     }
 });
 
