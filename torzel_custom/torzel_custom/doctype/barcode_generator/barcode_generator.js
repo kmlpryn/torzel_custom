@@ -44,25 +44,12 @@ frappe.ui.form.on("Barcode Generator", {
                         return;
                     }
 
-                    // Manually override Frappe's print format fetching logic
-                    frappe.ui.get_print_settings = function (frm, callback) {
-                        frappe.call({
-                            method: "frappe.printing.get_print_formats",
-                            args: { doctype: frm.doctype },
-                            callback: function (print_response) {
-                                let available_formats = print_response.message || [];
-                                let final_formats = available_formats.filter(pf => filtered_print_formats.includes(pf));
-
-                                if (final_formats.length === 0) {
-                                    frappe.msgprint(`No matching print formats found for ${frm.doc.brand}`);
-                                }
-
-                                callback({
-                                    print_formats: final_formats
-                                });
-                            }
-                        });
-                    };
+                    // Hook into the Print Dialog when it's opened
+                    frm.page.wrapper.on('click', '.btn-print', function () {
+                        setTimeout(() => {
+                            filter_print_dialog_options(filtered_print_formats);
+                        }, 500);
+                    });
 
                     console.log("Filtered Print Formats:", filtered_print_formats);
                 }
@@ -70,6 +57,27 @@ frappe.ui.form.on("Barcode Generator", {
         });
     }
 });
+
+// Function to override print format dropdown
+function filter_print_dialog_options(filtered_print_formats) {
+    // Get the dropdown element inside the print dialog
+    let printFormatDropdown = $('select[data-fieldname="print_format"]');
+
+    if (printFormatDropdown.length) {
+        // Remove all options that are not in the filtered list
+        printFormatDropdown.find('option').each(function () {
+            let formatName = $(this).text().trim();
+            if (!filtered_print_formats.includes(formatName)) {
+                $(this).remove();
+            }
+        });
+
+        // Automatically select the first available print format
+        if (filtered_print_formats.length > 0) {
+            printFormatDropdown.val(filtered_print_formats[0]).trigger('change');
+        }
+    }
+}
 
 const setupSerialPort = (frm) => {
     let lastPort = null;
