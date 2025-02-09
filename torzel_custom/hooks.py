@@ -119,7 +119,7 @@ doctype_js = {
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
+# override_doctype_class = 
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
@@ -178,6 +178,11 @@ doc_events = {
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "torzel_custom.event.get_events"
 # }
+
+override_whitelisted_methods = {
+    "frappe.printing.get_print_formats": "torzel_custom.overrides.print_format.get_print_formats"
+}
+
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

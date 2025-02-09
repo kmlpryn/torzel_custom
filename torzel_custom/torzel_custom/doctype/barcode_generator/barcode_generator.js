@@ -28,33 +28,33 @@ frappe.ui.form.on("Barcode Generator", {
             });
         }
 
-        if (!frm.doc.brand) {
-            return; // No filtering if brand is not set
-        }
+        // if (!frm.doc.brand) {
+        //     return; // No filtering if brand is not set
+        // }
 
-        frappe.call({
-            method: "torzel_custom.torzel_custom.doctype.barcode_generator.barcode_generator.get_filtered_print_formats",
-            args: { docname: frm.doc.name },
-            callback: function (response) {
-                if (response.message) {
-                    let filtered_print_formats = response.message;
+        // frappe.call({
+        //     method: "torzel_custom.torzel_custom.doctype.barcode_generator.barcode_generator.get_filtered_print_formats",
+        //     args: { docname: frm.doc.name },
+        //     callback: function (response) {
+        //         if (response.message) {
+        //             let filtered_print_formats = response.message;
 
-                    if (filtered_print_formats.length === 0) {
-                        frappe.msgprint(`No print formats found for brand: ${frm.doc.brand}`);
-                        return;
-                    }
+        //             if (filtered_print_formats.length === 0) {
+        //                 frappe.msgprint(`No print formats found for brand: ${frm.doc.brand}`);
+        //                 return;
+        //             }
 
-                    // Hook into the Print Dialog when it's opened
-                    frm.page.wrapper.on('click', '.btn-print', function () {
-                        setTimeout(() => {
-                            filter_print_dialog_options(filtered_print_formats);
-                        }, 500);
-                    });
+        //             // Hook into the Print Dialog when it's opened
+        //             frm.page.wrapper.on('click', '.btn-print', function () {
+        //                 setTimeout(() => {
+        //                     filter_print_dialog_options(filtered_print_formats);
+        //                 }, 500);
+        //             });
 
-                    console.log("Filtered Print Formats:", filtered_print_formats);
-                }
-            }
-        });
+        //             console.log("Filtered Print Formats:", filtered_print_formats);
+        //         }
+        //     }
+        // });
     }
 });
 

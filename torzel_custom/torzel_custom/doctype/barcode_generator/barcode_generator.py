@@ -93,22 +93,34 @@ class BarcodeGenerator(Document):
         }
 
     def get_filtered_print_formats(self):
-        """Fetch only print formats that start with the brand name"""
+        """Fetch only print formats that start with the brand name."""
         if not self.brand:
             return []
 
         brand_lower = self.brand.lower()
 
-        print_formats = frappe.get_all("Print Format", 
-                                       filters={"doc_type": "Barcode Generator"}, 
-                                       fields=["name"])
+        # Get all print formats for Barcode Generator
+        print_formats = frappe.get_all(
+            "Print Format",
+            filters={"doc_type": "Barcode Generator"},
+            fields=["name"]
+        )
 
-        filtered_formats = [pf["name"] for pf in print_formats if pf["name"].lower().startswith(brand_lower)]
+        # Filter print formats based on brand name (case insensitive)
+        filtered_formats = [
+            pf["name"] for pf in print_formats if pf["name"].lower().startswith(brand_lower)
+        ]
 
         return filtered_formats
 
 @frappe.whitelist()
-def get_filtered_print_formats(docname):
-    """Return filtered print formats for the given Barcode Generator document."""
-    doc = frappe.get_doc("Barcode Generator", docname)
-    return doc.get_filtered_print_formats()
+def get_print_formats(doctype, docname=None):
+    """Return only print formats that match the brand of the given Barcode Generator document."""
+    if not docname:
+        return frappe.get_all("Print Format", filters={"doc_type": doctype}, fields=["name"])
+
+    doc = frappe.get_doc(doctype, docname)
+    if hasattr(doc, "get_filtered_print_formats"):
+        return doc.get_filtered_print_formats()
+    
+    return frappe.get_all("Print Format", filters={"doc_type": doctype}, fields=["name"])
