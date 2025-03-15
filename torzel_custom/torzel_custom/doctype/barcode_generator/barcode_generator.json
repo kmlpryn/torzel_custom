@@ -26,6 +26,7 @@
   "material_weight_section",
   "column_break_ndxa",
   "gross_weight",
+  "weight_preview",
   "column_break_ppzj",
   "tare_weight",
   "column_break_crvt",
@@ -278,12 +279,18 @@
    "fieldtype": "Float",
    "label": "Net Weight Difference",
    "precision": "3"
+  },
+  {
+   "fieldname": "weight_preview",
+   "fieldtype": "Data",
+   "label": "Weight Preview",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-09 16:29:55.482642",
+ "modified": "2025-03-15 19:38:13.253562",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Barcode Generator",

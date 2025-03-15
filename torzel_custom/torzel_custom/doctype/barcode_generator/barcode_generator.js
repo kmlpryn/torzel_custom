@@ -20,12 +20,10 @@ frappe.ui.form.on("Barcode Generator", {
   refresh(frm) {
     if ("serial" in navigator) {
       setupSerialPort(frm);
+      //setupTestMode(frm);
     } else {
-      frappe.msgprint({
-        message: __("Please use Google Chrome browser"),
-        title: __("Web Serial API is not supported."),
-        indicator: "red",
-      });
+      // Add a test mode button when Serial API is not available
+      setupTestMode(frm);
     }
 
     // if (!frm.doc.brand) {
@@ -139,16 +137,7 @@ const startPreviewingWeight = async (port, frm) => {
   const textDecoder = new TextDecoderStream();
   const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
   const reader = textDecoder.readable.getReader();
-
-  // Add a preview field in the form
-  if (!frm.fields_dict['weight_preview']) {
-    frm.add_field({
-      fieldname: 'weight_preview',
-      fieldtype: 'Data',
-      label: 'Weight Preview',
-      read_only: 1,
-    });
-  }
+  let buffer = '';
 
   try {
     while (true) {
@@ -157,20 +146,27 @@ const startPreviewingWeight = async (port, frm) => {
         reader.releaseLock();
         break;
       }
-      const valueArr = (value || "").split(" ");
-      for (const val of valueArr) {
-        if (!isNaN(+val)) {
-          const weight = val.trim();
-          // Always update the preview
-          frm.set_value('weight_preview', weight);
 
-          // Only update gross_weight if not capturing
-          if (!isCapturing) {
-            frm.set_value('gross_weight', weight);
-          }
-          console.log('Weight preview:', weight);
-          break;
+      // Append new data to buffer
+      buffer += value;
+
+      // Try to extract weight from buffer
+      const weight = extractWeight(buffer);
+      if (weight !== null) {
+        // Always update the preview
+        frm.set_value('weight_preview', weight);
+
+        // Only update gross_weight if not capturing
+        if (!isCapturing) {
+          frm.set_value('gross_weight', weight);
         }
+        console.log('Raw buffer:', buffer);
+        console.log('Extracted weight:', weight);
+      }
+
+      // Clear buffer if it gets too long, keeping recent data
+      if (buffer.length > 200) {
+        buffer = buffer.slice(-100);
       }
     }
   } catch (err) {
@@ -184,6 +180,37 @@ const startPreviewingWeight = async (port, frm) => {
   }
 };
 
+function extractWeight(data) {
+  // Clean the data: replace common separators and noise with spaces
+  let cleanData = data.replace(/[^0-9.+\-kKgG\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Split the cleaned data into tokens
+  let tokens = cleanData.split(' ');
+  let possibleWeights = [];
+
+  for (let token of tokens) {
+    // Remove any non-essential characters
+    token = token.replace(/[kKgG]/g, '').trim();
+
+    // Try to extract a valid number
+    let number = parseFloat(token);
+
+    // Validate the number
+    if (!isNaN(number) &&
+      number > 0 && // Weight should be positive
+      number < 999999 && // Reasonable upper limit
+      token.includes('.')) { // Must include decimal point
+
+      // Standardize to 3 decimal places
+      possibleWeights.push(number.toFixed(3));
+    }
+  }
+
+  // Return the last valid weight found, if any
+  return possibleWeights.length > 0 ? possibleWeights[possibleWeights.length - 1] : null;
+}
 
 async function calculate_length(frm) {
   // Ensure item_code is available
@@ -252,3 +279,76 @@ async function fetch_custom_factor_of_calculation(item_code) {
     return null;
   }
 }
+
+// Test mode setup
+const setupTestMode = (frm) => {
+  let isCapturing = false;
+  let simulationInterval;
+
+  // Helper function to generate random weight formats
+  const generateRandomWeightFormat = () => {
+    const baseWeight = (Math.random() * 100).toFixed(3);
+    const formats = [
+      // Standard format
+      `${baseWeight}`,
+      // Leading zeros format
+      `00${baseWeight}`,
+      // K prefix format
+      `02K +${baseWeight}`,
+      // With noise characters
+      `ff 82 ${baseWeight} aar`,
+      // Multiple readings with noise
+      `82 8a ${baseWeight} ff ff ${(parseFloat(baseWeight) + 0.01).toFixed(3)}`,
+      // G suffix format
+      `${baseWeight}G`,
+      // With control characters
+      `ca ca ${baseWeight} ff`,
+      // Bracketed format
+      `[${baseWeight}]`
+    ];
+
+    return formats[Math.floor(Math.random() * formats.length)];
+  };
+
+  frm.add_custom_button(__('Start Test Simulation'), function () {
+    if (!simulationInterval) {
+      // Start simulation
+      simulationInterval = setInterval(() => {
+        const simulatedWeight = generateRandomWeightFormat();
+        console.log('Simulated raw data:', simulatedWeight);
+
+        // Update preview
+        const extractedWeight = extractWeight(simulatedWeight);
+        frm.set_value('weight_preview', extractedWeight);
+
+        // Update gross_weight if not capturing
+        if (!isCapturing) {
+          frm.set_value('gross_weight', extractedWeight);
+        }
+      }, 1000); // Update every second
+
+      frappe.msgprint(__('Test simulation started. Random weights will be generated in various formats.'));
+      $(this).html(__('Stop Test Simulation'));
+    } else {
+      // Stop simulation
+      clearInterval(simulationInterval);
+      simulationInterval = null;
+      $(this).html(__('Start Test Simulation'));
+      frappe.msgprint(__('Test simulation stopped.'));
+    }
+  });
+
+  frm.add_custom_button(__('Capture Weight'), function () {
+    const grossWeight = frm.doc.gross_weight;
+    if (grossWeight) {
+      isCapturing = !isCapturing;
+      if (isCapturing) {
+        frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
+      } else {
+        frappe.msgprint(__('Ready for new weight reading'));
+      }
+    } else {
+      frappe.msgprint(__('No weight available to capture.'));
+    }
+  });
+};
