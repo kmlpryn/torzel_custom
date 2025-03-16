@@ -90,7 +90,7 @@ const setupSerialPort = (frm) => {
         lastPort = null;
         connectButton.html(__('Connect to Weight Machine'));
         frappe.msgprint(__('Disconnected from the weight machine.'));
-        frm.set_value('gross_weight', '');
+        frm.set_value('weight_preview', '');
       } catch (err) {
         console.error('Failed to disconnect from the weight machine:', err);
         frappe.msgprint(__('Failed to disconnect from the weight machine.'));
@@ -110,12 +110,12 @@ const setupSerialPort = (frm) => {
     }
   });
 
-  // Capture Weight Button
+  // Simplified Capture Weight Button
   frm.add_custom_button(__('Capture Weight'), function () {
-    const grossWeight = frm.doc.weight_preview;
-    if (grossWeight) {
-      frm.set_value('gross_weight', grossWeight);
-      frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
+    const previewWeight = frm.doc.weight_preview;
+    if (previewWeight) {
+      frm.set_value('gross_weight', previewWeight);
+      frappe.msgprint(__('Weight captured: ') + previewWeight + ' kg');
     } else {
       frappe.msgprint(__('No weight available to capture.'));
     }
@@ -142,25 +142,16 @@ const startPreviewingWeight = async (port, frm) => {
         break;
       }
 
-      // Append new data to buffer
       buffer += value;
 
-      // Try to extract weight from buffer
       const weight = extractWeight(buffer);
       if (weight !== null) {
-        // Always update the preview
+        // Only update the preview field
         frm.set_value('weight_preview', weight);
-
-        // Only update gross_weight if NOT capturing
-        // This means the weight will keep updating until user clicks "Capture"
-        if (!isCapturing) {
-          frm.set_value('gross_weight', weight);
-        }
         console.log('Raw buffer:', buffer);
         console.log('Extracted weight:', weight);
       }
 
-      // Clear buffer if it gets too long
       if (buffer.length > 200) {
         buffer = buffer.slice(-100);
       }
@@ -276,7 +267,7 @@ async function fetch_custom_factor_of_calculation(item_code) {
   }
 }
 
-// Test mode setup
+// Modify test mode to match production behavior
 const setupTestMode = (frm) => {
   let simulationInterval;
 
@@ -307,20 +298,20 @@ const setupTestMode = (frm) => {
 
   frm.add_custom_button(__('Start Test Simulation'), function () {
     if (!simulationInterval) {
-      // Start simulation
       simulationInterval = setInterval(() => {
         const simulatedWeight = generateRandomWeightFormat();
         console.log('Simulated raw data:', simulatedWeight);
 
-        // Update preview using the same extraction logic as production
         const extractedWeight = extractWeight(simulatedWeight);
-        frm.set_value('weight_preview', extractedWeight);
-      }, 1000); // Update every second
+        if (extractedWeight) {
+          // Only update preview weight
+          frm.set_value('weight_preview', extractedWeight);
+        }
+      }, 1000);
 
       frappe.msgprint(__('Test simulation started. Random weights will be generated in various formats.'));
       $(this).html(__('Stop Test Simulation'));
     } else {
-      // Stop simulation
       clearInterval(simulationInterval);
       simulationInterval = null;
       $(this).html(__('Start Test Simulation'));
@@ -328,12 +319,12 @@ const setupTestMode = (frm) => {
     }
   });
 
-  // Use the same capture logic as production
+  // Use same capture logic as production
   frm.add_custom_button(__('Capture Weight'), function () {
-    const grossWeight = frm.doc.weight_preview;
-    if (grossWeight) {
-      frm.set_value('gross_weight', grossWeight);
-      frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
+    const previewWeight = frm.doc.weight_preview;
+    if (previewWeight) {
+      frm.set_value('gross_weight', previewWeight);
+      frappe.msgprint(__('Weight captured: ') + previewWeight + ' kg');
     } else {
       frappe.msgprint(__('No weight available to capture.'));
     }
