@@ -105,7 +105,6 @@ const setupSerialPort = (frm) => {
   // Connect/Disconnect Button
   let connectButton = frm.add_custom_button(__('Connect to Weight Machine'), async function () {
     if (lastPort && lastPort.readable) {
-      // Disconnect
       try {
         await disconnectPort();
         connectButton.html(__('Connect to Weight Machine'));
@@ -115,7 +114,6 @@ const setupSerialPort = (frm) => {
         frappe.msgprint(__('Failed to disconnect from the weight machine.'));
       }
     } else {
-      // Connect
       try {
         const port = await navigator.serial.requestPort();
         await connectToPort(port, frm);
@@ -135,26 +133,15 @@ const setupSerialPort = (frm) => {
       return;
     }
 
-    const currentWeight = frappe.model.get_value(currentRow.doctype, currentRow.name, 'gross_qty');
+    const previewWeight = frm.doc.weight_preview;
+    if (previewWeight) {
+      frappe.model.set_value(currentRow.doctype, currentRow.name, 'gross_qty', previewWeight);
+      frappe.msgprint(__('Weight captured for row #') + currentRow.idx + ': ' + previewWeight + ' kg');
 
-    if (currentWeight) {
-      if (!capturedRows.has(currentRow.name)) {
-        // Lock the weight
-        capturedRows.add(currentRow.name);
-        frappe.msgprint(__('Weight captured for row #') + currentRow.idx + ': ' + currentWeight + ' kg');
-
-        frappe.show_alert({
-          message: __('Row #') + currentRow.idx + __(' weight captured'),
-          indicator: 'green'
-        }, 3);
-
-        $(this).html(__('Release Capture'));
-      } else {
-        // Release capture for this row
-        capturedRows.delete(currentRow.name);
-        $(this).html(__('Capture Weight'));
-        frappe.msgprint(__('Released capture for row #') + currentRow.idx + __('. Ready for new reading.'));
-      }
+      frappe.show_alert({
+        message: __('Row #') + currentRow.idx + __(' weight captured'),
+        indicator: 'green'
+      }, 3);
     } else {
       frappe.msgprint(__('No weight available to capture.'));
     }
@@ -193,11 +180,9 @@ const startPreviewingWeight = async (port, frm) => {
       buffer += value;
 
       const weight = extractWeight(buffer);
-      if (weight !== null && currentRow) {
-        // Only update gross_qty if row is not captured
-        if (!capturedRows.has(currentRow.name)) {
-          frappe.model.set_value(currentRow.doctype, currentRow.name, 'gross_qty', weight);
-        }
+      if (weight !== null) {
+        // Update the preview field
+        frm.set_value('weight_preview', weight);
         console.log('Raw buffer:', buffer);
         console.log('Extracted weight:', weight);
       }
@@ -281,10 +266,12 @@ function calculateGrossQty(frm) {
   let totalGrossQty = 0;
 
   (frm.doc.gate_pass_item_table || []).forEach((item) => {
-    totalGrossQty += item.gross_qty || 0;
+    if (item.gross_qty) {
+      totalGrossQty += parseFloat(item.gross_qty);
+    }
   });
 
-  frm.set_value('total_gw_qty', totalGrossQty);
+  frm.set_value('total_gw_qty', totalGrossQty.toFixed(3));
 }
 
 // Test mode setup
@@ -323,18 +310,14 @@ const setupTestMode = (frm) => {
         console.log('Simulated raw data:', simulatedWeight);
 
         const extractedWeight = extractWeight(simulatedWeight);
-        if (extractedWeight && currentRow) {
-          // Only update if not captured
-          if (!capturedRows.has(currentRow.name)) {
-            frappe.model.set_value(currentRow.doctype, currentRow.name, 'gross_qty', extractedWeight);
-          }
+        if (extractedWeight) {
+          frm.set_value('weight_preview', extractedWeight);
         }
       }, 1000);
 
       frappe.msgprint(__('Test simulation started. Random weights will be generated in various formats.'));
       $(this).html(__('Stop Test Simulation'));
     } else {
-      // Stop simulation
       clearInterval(simulationInterval);
       simulationInterval = null;
       $(this).html(__('Start Test Simulation'));
@@ -342,21 +325,19 @@ const setupTestMode = (frm) => {
     }
   });
 
+  // Use same capture logic as production
   frm.add_custom_button(__('Capture Weight'), function () {
-    if (currentRow) {
-      const grossQty = frappe.model.get_value(currentRow.doctype, currentRow.name, 'gross_qty');
-      if (grossQty) {
-        isCapturing = !isCapturing;
-        if (isCapturing) {
-          frappe.msgprint(__('Weight captured and set in Gross Quantity: ') + grossQty + ' kg');
-        } else {
-          frappe.msgprint(__('Ready for new weight reading'));
-        }
-      } else {
-        frappe.msgprint(__('No weight available to capture.'));
-      }
-    } else {
+    if (!currentRow) {
       frappe.msgprint(__('Please select a row in the Gate Pass Items table.'));
+      return;
+    }
+
+    const previewWeight = frm.doc.weight_preview;
+    if (previewWeight) {
+      frappe.model.set_value(currentRow.doctype, currentRow.name, 'gross_qty', previewWeight);
+      frappe.msgprint(__('Weight captured for row #') + currentRow.idx + ': ' + previewWeight + ' kg');
+    } else {
+      frappe.msgprint(__('No weight available to capture.'));
     }
   });
 };

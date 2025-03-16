@@ -114,18 +114,8 @@ const setupSerialPort = (frm) => {
   frm.add_custom_button(__('Capture Weight'), function () {
     const grossWeight = frm.doc.weight_preview;
     if (grossWeight) {
-      if (!isCapturing) {
-        // Start capturing - lock in the current weight
-        isCapturing = true;
-        frm.set_value('gross_weight', grossWeight);
-        frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
-        $(this).html(__('Release Capture'));
-      } else {
-        // Stop capturing - allow new readings
-        isCapturing = false;
-        $(this).html(__('Capture Weight'));
-        frappe.msgprint(__('Ready for new weight reading'));
-      }
+      frm.set_value('gross_weight', grossWeight);
+      frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
     } else {
       frappe.msgprint(__('No weight available to capture.'));
     }
@@ -288,7 +278,6 @@ async function fetch_custom_factor_of_calculation(item_code) {
 
 // Test mode setup
 const setupTestMode = (frm) => {
-  let isCapturing = false;
   let simulationInterval;
 
   // Helper function to generate random weight formats
@@ -323,14 +312,9 @@ const setupTestMode = (frm) => {
         const simulatedWeight = generateRandomWeightFormat();
         console.log('Simulated raw data:', simulatedWeight);
 
-        // Update preview
+        // Update preview using the same extraction logic as production
         const extractedWeight = extractWeight(simulatedWeight);
         frm.set_value('weight_preview', extractedWeight);
-
-        // Update gross_weight if not capturing
-        if (!isCapturing) {
-          frm.set_value('gross_weight', extractedWeight);
-        }
       }, 1000); // Update every second
 
       frappe.msgprint(__('Test simulation started. Random weights will be generated in various formats.'));
@@ -344,15 +328,12 @@ const setupTestMode = (frm) => {
     }
   });
 
+  // Use the same capture logic as production
   frm.add_custom_button(__('Capture Weight'), function () {
-    const grossWeight = frm.doc.gross_weight;
+    const grossWeight = frm.doc.weight_preview;
     if (grossWeight) {
-      isCapturing = !isCapturing;
-      if (isCapturing) {
-        frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
-      } else {
-        frappe.msgprint(__('Ready for new weight reading'));
-      }
+      frm.set_value('gross_weight', grossWeight);
+      frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
     } else {
       frappe.msgprint(__('No weight available to capture.'));
     }

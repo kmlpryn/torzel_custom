@@ -18,6 +18,9 @@
   "column_break_nrmf",
   "bag_no",
   "tare_weight",
+  "section_break_zbtu",
+  "column_break_eghs",
+  "column_break_nsea",
   "weight_preview",
   "item_section",
   "gate_pass_item_table",
@@ -155,6 +158,18 @@
    "fieldtype": "Data",
    "label": "Preview Weight",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_zbtu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_eghs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_nsea",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -165,7 +180,7 @@
    "link_fieldname": "custom_gate_pass"
   }
  ],
- "modified": "2025-03-15 19:54:06.308350",
+ "modified": "2025-03-16 16:52:42.196307",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Gate Pass",
