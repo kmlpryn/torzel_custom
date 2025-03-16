@@ -1,3 +1,6 @@
+let lastPort = null;
+let isCapturing = false;
+
 frappe.ui.form.on("Barcode Generator", {
   net_weight: function (frm) {
     calculate_length(frm);
@@ -78,9 +81,6 @@ function filter_print_dialog_options(filtered_print_formats) {
 }
 
 const setupSerialPort = (frm) => {
-  let lastPort = null;
-  let isCapturing = false;
-
   // Connect/Disconnect Button
   let connectButton = frm.add_custom_button(__('Connect to Weight Machine'), async function () {
     if (lastPort && lastPort.readable) {
@@ -112,13 +112,18 @@ const setupSerialPort = (frm) => {
 
   // Capture Weight Button
   frm.add_custom_button(__('Capture Weight'), function () {
-    const grossWeight = frm.doc.gross_weight;
+    const grossWeight = frm.doc.weight_preview;
     if (grossWeight) {
-      isCapturing = !isCapturing;  // Toggle capture state
-      if (isCapturing) {
+      if (!isCapturing) {
+        // Start capturing - lock in the current weight
+        isCapturing = true;
+        frm.set_value('gross_weight', grossWeight);
         frappe.msgprint(__('Weight captured: ') + grossWeight + ' kg');
+        $(this).html(__('Release Capture'));
       } else {
-        // If uncapturing, allow new readings
+        // Stop capturing - allow new readings
+        isCapturing = false;
+        $(this).html(__('Capture Weight'));
         frappe.msgprint(__('Ready for new weight reading'));
       }
     } else {
@@ -156,7 +161,8 @@ const startPreviewingWeight = async (port, frm) => {
         // Always update the preview
         frm.set_value('weight_preview', weight);
 
-        // Only update gross_weight if not capturing
+        // Only update gross_weight if NOT capturing
+        // This means the weight will keep updating until user clicks "Capture"
         if (!isCapturing) {
           frm.set_value('gross_weight', weight);
         }
@@ -164,7 +170,7 @@ const startPreviewingWeight = async (port, frm) => {
         console.log('Extracted weight:', weight);
       }
 
-      // Clear buffer if it gets too long, keeping recent data
+      // Clear buffer if it gets too long
       if (buffer.length > 200) {
         buffer = buffer.slice(-100);
       }
