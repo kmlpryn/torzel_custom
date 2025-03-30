@@ -4,14 +4,11 @@ let isCapturing = false;
 frappe.ui.form.on("Barcode Generator", {
   net_weight: function (frm) {
     calculate_length(frm);
-    calculate_dispatched_weights(frm);
-  },
-  gross_weight: function (frm) {
-    calculate_net_weight(frm);
+    calculate_gross_weight(frm);
     calculate_dispatched_weights(frm);
   },
   tare_weight: function (frm) {
-    calculate_net_weight(frm);
+    calculate_gross_weight(frm);
     calculate_dispatched_weights(frm);
   },
   net_weight_diff: function (frm) {
@@ -110,12 +107,12 @@ const setupSerialPort = (frm) => {
     }
   });
 
-  // Simplified Capture Weight Button
+  // Modified Capture Weight Button to capture net weight instead
   frm.add_custom_button(__('Capture Weight'), function () {
     const previewWeight = frm.doc.weight_preview;
     if (previewWeight) {
-      frm.set_value('gross_weight', previewWeight);
-      frappe.msgprint(__('Weight captured: ') + previewWeight + ' kg');
+      frm.set_value('net_weight', previewWeight);
+      frappe.msgprint(__('Net weight captured: ') + previewWeight + ' kg');
     } else {
       frappe.msgprint(__('No weight available to capture.'));
     }
@@ -239,15 +236,16 @@ const calculate_dispatched_weights = (frm) => {
   frm.set_value('dispatched_gross_weight', dispatched_gross_weight);
 };
 
-const calculate_net_weight = (frm) => {
-  let gross_weight = parseFloat(frm.doc.gross_weight) || 0;
+// New function to calculate gross weight
+const calculate_gross_weight = (frm) => {
+  let net_weight = parseFloat(frm.doc.net_weight) || 0;
   let tare_weight = parseFloat(frm.doc.tare_weight) || 0;
 
-  if (gross_weight && tare_weight) {
-    let net_weight = gross_weight - tare_weight;
-    frm.set_value('net_weight', net_weight);
+  if (net_weight || tare_weight) {
+    let gross_weight = net_weight + tare_weight;
+    frm.set_value('gross_weight', gross_weight);
   } else {
-    frm.set_value('net_weight', '');
+    frm.set_value('gross_weight', '');
   }
 };
 
@@ -267,7 +265,7 @@ async function fetch_custom_factor_of_calculation(item_code) {
   }
 }
 
-// Modify test mode to match production behavior
+// Modify test mode to match new production behavior
 const setupTestMode = (frm) => {
   let simulationInterval;
 
@@ -304,7 +302,6 @@ const setupTestMode = (frm) => {
 
         const extractedWeight = extractWeight(simulatedWeight);
         if (extractedWeight) {
-          // Only update preview weight
           frm.set_value('weight_preview', extractedWeight);
         }
       }, 1000);
@@ -319,12 +316,12 @@ const setupTestMode = (frm) => {
     }
   });
 
-  // Use same capture logic as production
+  // Modified to capture net weight instead of gross weight
   frm.add_custom_button(__('Capture Weight'), function () {
     const previewWeight = frm.doc.weight_preview;
     if (previewWeight) {
-      frm.set_value('gross_weight', previewWeight);
-      frappe.msgprint(__('Weight captured: ') + previewWeight + ' kg');
+      frm.set_value('net_weight', previewWeight);
+      frappe.msgprint(__('Net weight captured: ') + previewWeight + ' kg');
     } else {
       frappe.msgprint(__('No weight available to capture.'));
     }
