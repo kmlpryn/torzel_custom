@@ -21,6 +21,7 @@
   "raw_material",
   "column_break_epjd",
   "finished_product",
+  "finished_product_name",
   "column_break_bcfp",
   "length",
   "material_weight_section",
@@ -285,12 +286,19 @@
    "fieldtype": "Data",
    "label": "Weight Preview",
    "read_only": 1
+  },
+  {
+   "fetch_from": "finished_product.item_name",
+   "fetch_if_empty": 1,
+   "fieldname": "finished_product_name",
+   "fieldtype": "Data",
+   "label": "Finished Product Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-30 18:39:41.991627",
+ "modified": "2025-04-05 17:51:38.562314",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Barcode Generator",
@@ -311,6 +319,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
