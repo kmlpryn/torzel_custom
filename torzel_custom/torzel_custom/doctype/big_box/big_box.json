@@ -28,6 +28,7 @@
    "search_index": 1
   },
   {
+   "default": "Today",
    "fieldname": "date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -49,7 +50,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-04-05 18:46:56.277340",
+ "modified": "2025-04-07 23:21:10.159742",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Big Box",

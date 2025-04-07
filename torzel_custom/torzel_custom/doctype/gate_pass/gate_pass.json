@@ -54,9 +54,11 @@
    "reqd": 1
   },
   {
+   "default": "Today",
    "fieldname": "gate_pass_date",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "reqd": 1
   },
   {
    "fieldname": "supplier",
@@ -180,7 +182,7 @@
    "link_fieldname": "custom_gate_pass"
   }
  ],
- "modified": "2025-03-16 16:52:42.196307",
+ "modified": "2025-04-07 23:23:04.799816",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Gate Pass",
@@ -201,6 +203,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [
