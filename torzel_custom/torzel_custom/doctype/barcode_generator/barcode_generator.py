@@ -2,8 +2,15 @@
 # For license information, please see license.txt
 import frappe
 from frappe.model.document import Document
+from datetime import datetime
+
 
 class BarcodeGenerator(Document):
+    def autoname(self):
+        now = datetime.now()
+        self.name = now.strftime("%y%S%m%M%d%H")
+        #self.name = now.strftime("%Y%m%d%H%M%S%f")
+
     def before_submit(self):
         # Set the barcode field to the document name if it is not already set
         if not self.barcode:

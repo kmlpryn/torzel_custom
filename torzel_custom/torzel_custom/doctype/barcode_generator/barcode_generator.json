@@ -1,7 +1,6 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "1.######",
  "creation": "2024-08-17 11:09:56.138456",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -311,11 +310,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-04-10 10:48:31.239274",
+ "modified": "2025-07-22 17:47:58.120602",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Barcode Generator",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "By script",
  "owner": "Administrator",
  "permissions": [
   {
