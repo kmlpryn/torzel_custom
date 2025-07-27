@@ -2,22 +2,46 @@ let lastPort = null;
 let isCapturing = false;
 
 frappe.ui.form.on("Barcode Generator", {
-  net_weight: function (frm) {
-    calculate_length(frm);
-    calculate_gross_weight(frm);
-    calculate_dispatched_weights(frm);
-  },
-  tare_weight: function (frm) {
-    calculate_gross_weight(frm);
-    calculate_dispatched_weights(frm);
-  },
-  net_weight_diff: function (frm) {
-    calculate_dispatched_weights(frm);
-  },
-  tare_weight_diff: function (frm) {
-    calculate_dispatched_weights(frm);
-  },
-  refresh(frm) {
+
+  
+
+  
+  finished_product: async function(frm) {
+     frm.remove_custom_button(__('Connect to Weight Machine')); 
+     frm.remove_custom_button(__('Capture Net Weight')); 
+     frm.remove_custom_button(__('Start Test Simulation')); 
+     frm.remove_custom_button(__('Capture Gross Weight')); 
+
+     const fields1 = [ 
+      "raw_material" , "brand" , "finished_product_name" ,  "source_warehouse" ,
+      "target_warehouse" , "weight_preview" ,  "net_weight" ,  "tare_weight" ,
+      "gross_weight" , "net_weight_diff" , "tare_weight_diff" , "dispatched_net_weight" ,
+      "dispatched_tare_weight" , "dispatched_gross_weight"
+     ]  
+    fields1.forEach(f => frm.set_value(f, ""));
+
+
+  let cgw = await fetch_custom_capture_gross_weight(frm.doc.finished_product);
+  console.log(cgw);
+  if (cgw === 1) {
+    frm.set_df_property('net_weight', 'read_only', 1);
+    frm.set_df_property('gross_weight' , 'read_only' , 0);
+    frm.set_df_property('net_weight_diff' , 'read_only' , 1 );
+    frm.set_df_property('tare_weight_diff' , 'read_only' , 0 );
+    if ("serial" in navigator) {
+      setupSerialPortgw(frm);
+      //setupTestMode(frm);
+    } else {
+      // Add a test mode button when Serial API is not available
+      setupTestModegw(frm);
+    }
+
+
+  } else if (cgw === 0) {
+    frm.set_df_property('gross_weight', 'read_only' , 1 );
+    frm.set_df_property('net_weight', 'read_only', 0);
+    frm.set_df_property('net_weight_diff' , 'read_only' , 0 );
+    frm.set_df_property('tare_weight_diff' , 'read_only' , 1 );
     if ("serial" in navigator) {
       setupSerialPort(frm);
       //setupTestMode(frm);
@@ -26,56 +50,85 @@ frappe.ui.form.on("Barcode Generator", {
       setupTestMode(frm);
     }
 
-    // if (!frm.doc.brand) {
-    //     return; // No filtering if brand is not set
-    // }
-
-    // frappe.call({
-    //     method: "torzel_custom.torzel_custom.doctype.barcode_generator.barcode_generator.get_filtered_print_formats",
-    //     args: { docname: frm.doc.name },
-    //     callback: function (response) {
-    //         if (response.message) {
-    //             let filtered_print_formats = response.message;
-
-    //             if (filtered_print_formats.length === 0) {
-    //                 frappe.msgprint(`No print formats found for brand: ${frm.doc.brand}`);
-    //                 return;
-    //             }
-
-    //             // Hook into the Print Dialog when it's opened
-    //             frm.page.wrapper.on('click', '.btn-print', function () {
-    //                 setTimeout(() => {
-    //                     filter_print_dialog_options(filtered_print_formats);
-    //                 }, 500);
-    //             });
-
-    //             console.log("Filtered Print Formats:", filtered_print_formats);
-    //         }
-    //     }
-    // });
   }
+},
+   
+  
+  net_weight: async function (frm) {
+     if (!frm.doc.finished_product) {
+    frappe.msgprint(__('Please select finished product.'));
+    frm.set_value('net_weight', '');
+    return;
+    }
+    logcgw(frm);
+    calculate_length(frm);
+    let cgw = await fetch_custom_capture_gross_weight(frm.doc.finished_product);
+    if(cgw === 0) {    
+    calculate_gross_weight(frm);
+    calculate_dispatched_weights(frm);
+    } else if ( cgw === 1) {
+      calculate_dispatched_weightsgw(frm);
+    }
+
+  },
+
+  gross_weight: async function (frm) {
+    let cgw = await fetch_custom_capture_gross_weight(frm.doc.finished_product);
+    if( cgw === 1) {
+    calculate_net_weight(frm);
+    calculate_dispatched_weightsgw(frm);
+    } else if ( cgw === 0 ) {
+      calculate_dispatched_weights(frm);
+    }
+  },
+
+  tare_weight: async function (frm) {
+    logcgw(frm);
+    
+    let cgw = await fetch_custom_capture_gross_weight(frm.doc.finished_product);
+    if( cgw === 1) {
+      calculate_net_weight(frm);
+    } else if ( cgw === 0 ) {
+    calculate_gross_weight(frm);
+    calculate_dispatched_weightsgw(frm);
+  }
+    
+  },
+  net_weight_diff: async function (frm) {
+    logcgw(frm);
+    let cgw = await fetch_custom_capture_gross_weight(frm.doc.finished_product);
+    if (cgw === 0) {
+    calculate_dispatched_weights(frm);
+    } else if ( cgw === 1) {
+      calculate_dispatched_weightsgw(frm);
+    }
+
+  },
+  tare_weight_diff: async function (frm) {
+    let cgw = await fetch_custom_capture_gross_weight(frm.doc.finished_product);
+    if (cgw === 0) {
+    calculate_dispatched_weights(frm);
+    } else if ( cgw === 1) {
+      calculate_dispatched_weightsgw(frm);
+    }
+  },
+
+
+  // refresh(frm) {
+
+
+  //   if ("serial" in navigator) {
+  //     setupSerialPort(frm);
+  //     //setupTestMode(frm);
+  //   } else {
+  //     // Add a test mode button when Serial API is not available
+  //     setupTestMode(frm);
+  //   }
+
+  // }
 });
 
-// Function to override print format dropdown
-function filter_print_dialog_options(filtered_print_formats) {
-  // Get the dropdown element inside the print dialog
-  let printFormatDropdown = $('select[data-fieldname="print_format"]');
 
-  if (printFormatDropdown.length) {
-    // Remove all options that are not in the filtered list
-    printFormatDropdown.find('option').each(function () {
-      let formatName = $(this).text().trim();
-      if (!filtered_print_formats.includes(formatName)) {
-        $(this).remove();
-      }
-    });
-
-    // Automatically select the first available print format
-    if (filtered_print_formats.length > 0) {
-      printFormatDropdown.val(filtered_print_formats[0]).trigger('change');
-    }
-  }
-}
 
 const setupSerialPort = (frm) => {
   // Connect/Disconnect Button
@@ -108,7 +161,7 @@ const setupSerialPort = (frm) => {
   });
 
   // Modified Capture Weight Button to capture net weight instead
-  frm.add_custom_button(__('Capture Weight'), function () {
+  frm.add_custom_button(__('Capture Net Weight'), function () {
     const previewWeight = frm.doc.weight_preview;
     if (previewWeight) {
       frm.set_value('net_weight', previewWeight);
@@ -236,6 +289,32 @@ const calculate_dispatched_weights = (frm) => {
   frm.set_value('dispatched_gross_weight', dispatched_gross_weight);
 };
 
+
+
+
+const calculate_dispatched_weightsgw = (frm) => {
+  let tare_weight = parseFloat(frm.doc.tare_weight) || 0;
+  let tare_weight_diff = parseFloat(frm.doc.tare_weight_diff) || 0;
+  let net_weight = parseFloat(frm.doc.net_weight) || 0;
+  let net_weight_diff = parseFloat(frm.doc.net_weight_diff) || 0;
+  let gross_weight = parseFloat(frm.doc.gross_weight) || 0;
+
+
+  let dispatched_tare_weight = tare_weight - tare_weight_diff;
+  let dispatched_gross_weight = gross_weight;
+  
+
+  frm.set_value('dispatched_tare_weight', dispatched_tare_weight);
+  frm.set_value('dispatched_gross_weight', dispatched_gross_weight);
+
+  // Dispatched Gross Weight = Dispatched Tare Weight + Dispatched Net Weight
+  let dispatched_net_weight = dispatched_gross_weight - dispatched_tare_weight
+  frm.set_value('dispatched_net_weight', dispatched_net_weight);
+};
+
+
+
+
 // New function to calculate gross weight
 const calculate_gross_weight = (frm) => {
   let net_weight = parseFloat(frm.doc.net_weight) || 0;
@@ -248,6 +327,16 @@ const calculate_gross_weight = (frm) => {
     frm.set_value('gross_weight', '');
   }
 };
+
+
+
+
+
+
+
+
+
+
 
 async function fetch_custom_factor_of_calculation(item_code) {
   try {
@@ -298,7 +387,7 @@ const setupTestMode = (frm) => {
     if (!simulationInterval) {
       simulationInterval = setInterval(() => {
         const simulatedWeight = generateRandomWeightFormat();
-        console.log('Simulated raw data:', simulatedWeight);
+        // console.log('Simulated raw data:', simulatedWeight);
 
         const extractedWeight = extractWeight(simulatedWeight);
         if (extractedWeight) {
@@ -317,11 +406,200 @@ const setupTestMode = (frm) => {
   });
 
   // Modified to capture net weight instead of gross weight
-  frm.add_custom_button(__('Capture Weight'), function () {
+  frm.add_custom_button(__('Capture Net Weight'), function () {
     const previewWeight = frm.doc.weight_preview;
     if (previewWeight) {
       frm.set_value('net_weight', previewWeight);
       frappe.msgprint(__('Net weight captured: ') + previewWeight + ' kg');
+    } else {
+      frappe.msgprint(__('No weight available to capture.'));
+    }
+  });
+};
+
+
+
+
+
+
+async function fetch_custom_capture_gross_weight(item_code) {
+  try {
+    // Step 1: Fetch the Item Group from the Item
+    const itemResponse = await frappe.db.get_value('Item', { 'item_code': item_code }, 'item_group');
+
+    if (!itemResponse || !itemResponse.message || !itemResponse.message.item_group) {
+      console.warn('Item group not found for item:', item_code);
+      return null;
+    }
+
+    const item_group = itemResponse.message.item_group;
+
+    // Step 2: Fetch the custom_capture_gross_weight field from the Item Group
+    const groupResponse = await frappe.db.get_value('Item Group', { 'name': item_group }, 'custom_capture_gross_weight');
+
+    if (groupResponse && groupResponse.message && groupResponse.message.custom_capture_gross_weight != null) {
+      return groupResponse.message.custom_capture_gross_weight;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    console.error('Error fetching custom_capture_gross_weight:', err);
+    return null;
+  }
+}
+
+
+
+
+
+
+
+
+async function logcgw(frm) {
+  // Ensure item_code is available
+  if (!frm.doc.finished_product) {
+    frappe.msgprint(__('Please select finished product.'));
+    return;
+  }
+
+  // Fetch custom_factor_of_calculation from the Items Doctype
+  let cgw = await fetch_custom_capture_gross_weight(frm.doc.finished_product);
+
+
+  if (cgw !== null) {
+    console.log(cgw)
+  } else {
+    frappe.msgprint(__('Unable to fetch custom cgw for the selected item.'));
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const setupSerialPortgw = (frm) => {
+  // Connect/Disconnect Button
+  let connectButton = frm.add_custom_button(__('Connect to Weight Machine'), async function () {
+    if (lastPort && lastPort.readable) {
+      // Disconnect
+      try {
+        await lastPort.close();
+        lastPort = null;
+        connectButton.html(__('Connect to Weight Machine'));
+        frappe.msgprint(__('Disconnected from the weight machine.'));
+        frm.set_value('weight_preview', '');
+      } catch (err) {
+        console.error('Failed to disconnect from the weight machine:', err);
+        frappe.msgprint(__('Failed to disconnect from the weight machine.'));
+      }
+    } else {
+      // Connect
+      try {
+        const port = await navigator.serial.requestPort();
+        await connectToPort(port, frm);
+        lastPort = port;
+        connectButton.html(__('Disconnect from Weight Machine'));
+        startPreviewingWeight(port, frm);
+      } catch (err) {
+        console.error('Failed to connect to the weight machine:', err);
+        frappe.msgprint(__('Failed to connect to the weight machine.'));
+      }
+    }
+  });
+
+  // Simplified Capture Weight Button
+  frm.add_custom_button(__('Capture Gross Weight'), function () {
+    const previewWeight = frm.doc.weight_preview;
+    if (previewWeight) {
+      frm.set_value('gross_weight', previewWeight);
+      frappe.msgprint(__('Weight captured: ') + previewWeight + ' kg');
+    } else {
+      frappe.msgprint(__('No weight available to capture.'));
+    }
+  });
+};
+
+
+
+const calculate_net_weight = (frm) => {
+  let gross_weight = parseFloat(frm.doc.gross_weight) || 0;
+  let tare_weight = parseFloat(frm.doc.tare_weight) || 0;
+
+  if (gross_weight && tare_weight) {
+    let net_weight = gross_weight - tare_weight;
+    frm.set_value('net_weight', net_weight);
+  } else {
+    frm.set_value('net_weight', '');
+  }
+};
+
+
+const setupTestModegw = (frm) => {
+  let simulationInterval;
+
+  // Helper function to generate random weight formats
+  const generateRandomWeightFormat = () => {
+    const baseWeight = (Math.random() * 100).toFixed(3);
+    const formats = [
+      // Standard format
+      `${baseWeight}`,
+      // Leading zeros format
+      `00${baseWeight}`,
+      // K prefix format
+      `02K +${baseWeight}`,
+      // With noise characters
+      `ff 82 ${baseWeight} aar`,
+      // Multiple readings with noise
+      `82 8a ${baseWeight} ff ff ${(parseFloat(baseWeight) + 0.01).toFixed(3)}`,
+      // G suffix format
+      `${baseWeight}G`,
+      // With control characters
+      `ca ca ${baseWeight} ff`,
+      // Bracketed format
+      `[${baseWeight}]`
+    ];
+
+    return formats[Math.floor(Math.random() * formats.length)];
+  };
+
+  frm.add_custom_button(__('Start Test Simulation'), function () {
+    if (!simulationInterval) {
+      simulationInterval = setInterval(() => {
+        const simulatedWeight = generateRandomWeightFormat();
+        console.log('Simulated raw data:', simulatedWeight);
+
+        const extractedWeight = extractWeight(simulatedWeight);
+        if (extractedWeight) {
+          // Only update preview weight
+          frm.set_value('weight_preview', extractedWeight);
+        }
+      }, 1000);
+
+      frappe.msgprint(__('Test simulation started. Random weights will be generated in various formats.'));
+      $(this).html(__('Stop Test Simulation'));
+    } else {
+      clearInterval(simulationInterval);
+      simulationInterval = null;
+      $(this).html(__('Start Test Simulation'));
+      frappe.msgprint(__('Test simulation stopped.'));
+    }
+  });
+
+  // Use same capture logic as production
+  frm.add_custom_button(__('Capture Gross Weight'), function () {
+    const previewWeight = frm.doc.weight_preview;
+    if (previewWeight) {
+      frm.set_value('gross_weight', previewWeight);
+      frappe.msgprint(__('Weight captured: ') + previewWeight + ' kg');
     } else {
       frappe.msgprint(__('No weight available to capture.'));
     }
