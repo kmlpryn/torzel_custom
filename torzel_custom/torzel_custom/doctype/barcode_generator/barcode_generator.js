@@ -534,12 +534,16 @@ const calculate_net_weight = (frm) => {
   let gross_weight = parseFloat(frm.doc.gross_weight) || 0;
   let tare_weight = parseFloat(frm.doc.tare_weight) || 0;
 
-  if (gross_weight && tare_weight) {
-    let net_weight = gross_weight - tare_weight;
-    frm.set_value('net_weight', net_weight);
-  } else {
-    frm.set_value('net_weight', '');
-  }
+  // if (gross_weight && tare_weight) {
+  //   let net_weight = gross_weight - tare_weight;
+  //   frm.set_value('net_weight', net_weight);
+  // } else {
+  //   frm.set_value('net_weight', '');
+  // }
+  let net_weight = gross_weight - tare_weight;
+  frm.set_value('net_weight', net_weight);
+
+
 };
 
 
