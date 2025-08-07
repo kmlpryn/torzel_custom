@@ -18,7 +18,7 @@ frappe.ui.form.on("Barcode Generator", {
       "gross_weight" , "net_weight_diff" , "tare_weight_diff" , "dispatched_net_weight" ,
       "dispatched_tare_weight" , "dispatched_gross_weight"
      ]  
-    fields1.forEach(f => frm.set_value(f, ""));
+    // fields1.forEach(f => frm.set_value(f, ""));
 
 
   let cgw = await fetch_custom_capture_gross_weight(frm.doc.finished_product);
