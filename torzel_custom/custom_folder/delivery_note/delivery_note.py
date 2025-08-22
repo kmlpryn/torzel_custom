@@ -99,7 +99,8 @@ def get_dispatch_summary_data(doc):
 
     # Append the last group
     if current_group:
-        grouped_items.append(round_group_totals(current_group))
+        g = round_group_totals(current_group)
+        grouped_items.append(g)
      
     # Return the dispatch summary data
     return {
