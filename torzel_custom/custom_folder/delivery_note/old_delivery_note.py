@@ -88,6 +88,8 @@ def get_dispatch_summary_data(doc):
         current_group['tare_weight'] += item.custom_tare_weight or 0
         current_group['net_weight'] += net_weight
 
+        
+
     # Append the last group
     if current_group:
         grouped_items.append(current_group)
