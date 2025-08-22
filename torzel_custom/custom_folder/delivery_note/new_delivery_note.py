@@ -61,6 +61,13 @@ def get_dispatch_summary_data(doc):
     grouped_items = []
     current_group = None
 
+    def round_group_totals(g):
+       g['gross_weight'] = round(g['gross_weight'], 3)
+       g['tare_weight']  = round(g['tare_weight'], 3)
+       g['net_weight']   = round(g['net_weight'], 3)
+       return g
+
+
     # Iterate through the items
     for item in items:
         net_weight = (item.custom_gross_weight or 0) - (item.custom_tare_weight or 0)
@@ -92,7 +99,8 @@ def get_dispatch_summary_data(doc):
 
     # Append the last group
     if current_group:
-        grouped_items.append(current_group)
+        g = round_group_totals(current_group)
+        grouped_items.append(g)
      
     # Return the dispatch summary data
     return {
