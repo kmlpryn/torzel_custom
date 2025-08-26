@@ -11,6 +11,8 @@
   "date",
   "column_break_rjwv",
   "brand",
+  "section_break_vstt",
+  "scan_barcode",
   "section_break_boxn",
   "barcode_list"
  ],
@@ -56,13 +58,23 @@
    "fieldtype": "Link",
    "label": "Brand",
    "options": "Brand"
+  },
+  {
+   "fieldname": "section_break_vstt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "scan_barcode",
+   "fieldtype": "Data",
+   "label": "Scan Barcode",
+   "options": "Barcode"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-07 22:13:25.799014",
+ "modified": "2025-08-26 16:04:24.997468",
  "modified_by": "Administrator",
  "module": "Torzel Custom",
  "name": "Big Box",
