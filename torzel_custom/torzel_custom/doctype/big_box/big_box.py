@@ -36,6 +36,24 @@ class BigBox(Document):
 			# Normalize the child value to the resolved Name (ensures true Link integrity)
 			if raw != resolved_name:
 				d.barcode_number = resolved_name
+				
+
+            ds = frappe.db.get_value(link_dt, resolved_name, "docstatus")
+            if ds == 2:
+                frappe.throw(
+                    _("Barcode {0} is linked to a Cancelled {1} and cannot be added.")
+                    .format(raw, link_dt),
+                    title=_("Barcode Cancelled")
+                )
+            if ds != 1:
+                frappe.throw(
+                    _("Barcode {0} must be Submitted in {1} before it can be added.")
+                    .format(raw, link_dt),
+                    title=_("Barcode Not Submitted")
+                )
+
+
+
 
 			# Intra-document duplicate check
 			if resolved_name in seen:
